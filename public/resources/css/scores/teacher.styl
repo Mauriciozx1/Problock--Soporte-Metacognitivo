@@ -1,0 +1,102 @@
+@import 'nib'
+@require '../base/base-color'
+
+.exercise-name
+	text-align: center
+
+.section-selectors
+	margin-bottom: 3rem
+	padding-left: 4rem 
+	ul
+		list-style: none
+		margin: 0
+		padding: 0
+		li
+			border-bottom: 3px solid transparent
+			display: inline-block
+			padding: 0.7rem
+			font-size: 1.8rem
+			cursor: pointer
+			&.active
+				border-bottom-color: header-color
+			&:hover:not(.active)
+				border-bottom-color: #b602b4
+
+.sections-container
+	position: relative
+	padding: 0 2rem 3rem 2rem
+	section
+		position: absolute
+		top: 0
+		left: 0
+		visibility: hidden
+		width: 100%
+		&.active
+			visibility: visible
+		
+	.scores-section
+		.activities-table-container
+			text-align: center
+			margin-bottom: 3rem
+			table
+				margin: auto
+		.scores-table-container
+			text-align: center
+			table
+				margin: auto
+	table
+		tr
+			td,th
+				padding: 0.6rem 1.2rem
+				
+.statistics-section
+	
+	.widgets-container
+		display: flex
+		flex-wrap: wrap
+		justify-content: space-around
+		align-items: baseline
+
+	
+	.stat-widget
+		box-shadow: 1px 1px 6px 0 rgba(black, 0.4)
+		border: 1px solid lightgray
+		margin: 2rem 0
+		padding: 2rem
+		padding-bottom: 1rem
+		position: relative
+		min-width: 25rem
+		
+		&:before
+			border: 8px solid header-color
+			border-bottom-color: transparent
+			border-right-color: transparent
+			content: ""
+			display: block
+			height: 0
+			left: 0 			
+			position: absolute
+			top: 0
+			width: 0
+		&-title
+			font-size: 2rem
+			display: block
+			text-align: center
+			border-bottom: 2px solid #970295
+			padding-bottom: 0.6rem
+		&-content
+			padding: 1rem
+			padding-top: 2rem 
+			text-align: center
+	#exercise-score-avg
+		.stat-widget-content
+			font-size: 7rem
+
+table
+	text-align: left
+	tr
+		border-bottom: 1px solid 
+		th
+			background: header-color
+			color: white
+				

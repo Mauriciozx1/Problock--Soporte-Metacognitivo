@@ -1,0 +1,145 @@
+@import 'nib'
+@require '../base/base-color'
+
+.section-selectors
+	margin-bottom: 3rem
+	padding-left: 4rem 
+	padding-top: 4rem
+	ul
+		list-style: none
+		margin: 0
+		padding: 0
+		li
+			border-bottom: 3px solid transparent
+			display: inline-block
+			padding: 0.7rem
+			font-size: 1.8rem
+			cursor: pointer
+			&.active
+				border-bottom-color: header-color
+			&:hover:not(.active)
+				border-bottom-color: #b602b4
+
+.sections-container
+	height: calc(100vh - 208px)
+	position: relative
+	padding: 0 2rem 3rem 2rem
+	&>section
+		position: absolute
+		top: 0
+		left: 0
+		visibility: hidden
+		width: 100%
+		height: 100%
+		overflow-y: auto
+		&.active
+			visibility: visible
+
+	.controls-container
+		padding: 1rem 4rem
+		text-align: right
+		margin-bottom: 3rem
+		
+
+.table-container
+	margin: auto
+	max-width: 900px
+	width: 90%
+	table
+		width: 100%
+		tr
+			&:hover
+				.btn-delete
+					visibility: visible
+			th
+				border-bottom: 2px solid lightgray
+				text-align: left
+			
+			td
+				border-bottom: 1px solid lightgray
+				&:first-child
+					padding-right: 1rem
+					text-align: right
+					img
+						height: 60px
+						border-radius: 50%
+				.btn-delete
+					color: darkred
+					visibility: hidden
+					font-weight: bold
+					&:hover
+						color: red
+						cursor: pointer	
+							
+							
+
+.courses-section
+	display: flex 
+	.controls-container
+		input
+			font-size: 2.3rem
+	&>div:nth-child(2)
+		flex: 1
+		
+	.courses-aside-menu
+		background: rgba(black, 0.8)
+		color: white
+		overflow-y: auto
+		.add-course
+			text-align: center
+			margin: 0.5rem auto
+			border: 2px solid #8dff5f
+			border-radius: 50%
+			color: #8dff5f
+			cursor: pointer
+			display: block
+			height: 2.8rem
+			width: 1.5rem
+			font-size: 2.3rem
+			padding: 0 0.7rem
+			&:hover
+				color: lighten(#8dff5f,50%)
+				border-color: lighten(#8dff5f,40%)
+			
+		ul
+			list-style: none
+			padding: 0
+			margin: 0
+			li
+				cursor: pointer
+				display: block
+				padding: 1rem 2rem
+				
+				&:hover, &.active
+					background: rgba(white,0.1)
+					color: lighten(header-color, 60%)
+		
+		
+.teacher-modal
+	display: none
+	.modal-fade
+		background: rgba(black,0.8)
+		height: 100%
+		left: 0
+		position: fixed
+		top: 0
+		width: 100%
+		
+	.modal
+		text-align: center
+		width: 60rem
+		hr
+			background: transparent
+			border: 1px dotted lightgray
+			border-bottom-color: transparent
+		.modal-header
+			padding-bottom: 0
+		.modal-body
+			.fields-container
+				margin: 1rem 0
+				input
+					margin: 0.5rem
+					
+		.modal-footer
+			border-top: 1px solid lightgray
+			text-align: right

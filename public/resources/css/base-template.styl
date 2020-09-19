@@ -1,0 +1,138 @@
+@import 'nib'
+
+@require 'base/base-color'
+@require 'base/flash-msgs'
+@require 'forms/form-base'
+@require 'components/loading'
+@require 'help/help-tip'
+@require 'help/see-me-animation'
+@require 'help/tooltip'
+
+html
+	font-size: 10px
+	body
+		color: #5D5D5D
+		font-size: 1.6rem
+
+.header
+	background: header-color
+	display: flex
+	height: 7rem
+	position: relative
+	&-section
+		box-sizing: border-box
+		height: 100%
+		
+	&-center
+		flex-grow: 1
+		padding-top: 0.5rem  
+		text-align: center
+		.logo-container
+			img
+				height: 60px
+				width: auto
+	&-left
+		.institution-logo-container
+			height: 90%
+			padding-left: 1rem
+			img
+				border-radius: 0 0 2rem 2rem
+				height: 100%
+	&-right
+		padding: 1.5rem 1rem 0 0
+		position: relative
+		.current-user
+			cursor: pointer
+			div
+				display: inline-block
+				vertical-align: middle
+			&-image
+				border-radius: 50%
+				height: 4rem
+				overflow: hidden
+				width: 4rem
+				img
+					height: 100%
+					width: 100%
+			&-name
+				color: white
+				font-size: 1.7rem
+		.profile-header-menu
+			background: #f9f9f9
+			border-radius: 0 0 0.7rem 0.7rem
+			box-shadow: 1px 3px 8px 0 rgba(black,0.5)
+			display: none
+			left: 50%
+			overflow: hidden
+			position: absolute
+			text-align: center
+			top: 100%
+			transform: translateX(-50%)
+			width: 90%
+			z-index: 10
+			ul
+				margin: 0
+				padding: 0
+				list-style: none
+				li
+					a
+						color: inherit
+						display: block
+						border-top: 1px solid lightgray 
+						padding: 1rem 3rem
+						text-decoration: none
+						&:first-child()
+							border-top: 0
+						&:hover
+							background: #f0f0f0
+							cursor: pointer
+			
+.modal
+	background: white
+	box-shadow: 1px 1px 10px 0 rgba(black,0.6)
+	left: 50%
+	position: fixed
+	top: 50%
+	transform: translate(-50%,-50%)
+	z-index: 1000
+	&>div
+		padding: 1rem 
+		
+.material-icons
+	vertical-align:bottom
+		
+.no-select
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	
+.abs-center
+	left: 50%
+	position: absolute
+	top: 50%
+	transform: translate(-50%, -50%)
+	
+.no-event
+	pointer-events: none
+	
+.bold
+	font-weight: bold
+	
+
+.wysiwyg-color-black
+	color: #5d5d5d
+.wysiwyg-color-blue
+	color: blue
+.wysiwyg-color-green
+	color: green
+.wysiwyg-color-red
+	color: red 
+.wysiwyg-text-align-left
+	text-align: left
+.wysiwyg-text-align-center
+	text-align: center
+.wysiwyg-text-align-right
+	text-align: right

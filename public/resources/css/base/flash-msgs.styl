@@ -1,0 +1,61 @@
+/*******************************
+			FLASH MSGES
+*******************************/
+.centerFlashMessage
+	border: 1px solid
+	border-radius: 6px
+	box-shadow: 2px 3px 3px 0 rgba(black,0.3)
+	font-weight: bold
+	left: 50%
+	padding: 2.5rem
+	position: fixed
+	min-width: 290px
+	text-align: center
+	top: 50%
+	transform: translate(-50%,-50%)
+	z-index: 1000
+
+	&:before
+		content: ""
+		font-family: 'Material Icons'
+		font-size: 2rem
+		font-weight: normal
+		margin-right: 1rem
+		vertical-align: bottom
+
+	.topFlashMessage
+		border: 1px dashed
+		border-radius: 4px
+		font-weight: bold
+		left : 25%
+		margin: 10px
+		padding: 15px
+		position: relative
+		text-align: center
+		width: 50%
+
+.msg_success
+	color: #3ec042
+	background-color: #c4ecc6
+	&:before
+		content: 'check'
+
+.msg_warning
+	color: #c09853
+	background-color: #faf6b0
+
+	&:before
+		content: 'warning'
+
+.msg_error
+	color: #cc5152
+	background-color: #efc7c8
+
+	&:before
+		content: 'highlight_off'
+
+.msg_info
+	color: header-color
+	background-color: logo-color
+	&:before
+		content: 'info_outline'
