@@ -11,9 +11,6 @@ class Problem extends Model{
     public function activitiesGroups(){
         return $this->hasMany(ActivitiesGroup::class, 'problem_id');
     }
-    public function teamworkInscription(){
-        return $this->hasMany(TeamworkInscription::class,'problems_id');
-    }
 
     public function getAvgScore($studentId){
         $activitiesGroups = $this->activitiesGroups;

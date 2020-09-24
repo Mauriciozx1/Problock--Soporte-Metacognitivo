@@ -5,9 +5,7 @@ CSLP.Exercises.Models.Exercise = Backbone.Model.extend({
         description : '',
         open_at : '',
         close_at : '',
-        avgScore : 0,
-        teamworks : 0,
-        type_problem : ''
+        avgScore : 0
     },
 
     initialize : function() {
@@ -23,9 +21,7 @@ CSLP.Exercises.Models.Exercise = Backbone.Model.extend({
             name : this.get('name'),
             description : this.get('description'),
             open_at : this.get('open_at'),
-            close_at : this.get('close_at'),
-            teamworks : this.get('teamworks'),
-            type_problem : this.get('type_problem')
+            close_at : this.get('close_at')
         }, function(response) {
 
             if(!self.get('id')){
