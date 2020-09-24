@@ -13,4 +13,7 @@ class ActivitiesGroup extends Model{
     {
         return $this->belongsTo(Problem::class,'problem_id');
     }
+    public function teamwork(){
+        return $this-belongsTo(Teamwork::Class, 'teamwork_id');
+    }
 }

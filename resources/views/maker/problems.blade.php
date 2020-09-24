@@ -67,6 +67,15 @@
                                     <button class="btn-delete btn-red">Eliminar Problema</button>
                                 </div>
                                 <div class="modal-body">
+                                <div class="gruop-section">
+                                            <span class="bold">Tipo de Actividad</span>
+                                            <div class="input-teamworks">
+                                                ¿Grupal?<input type="text" name="frm-teamworks" id ="frm-teamworks" placeholder="Ingrese cantidad">
+                                            </div>
+                                                <input type="text" class="text-type-problem" id="frm-type-problem">
+                                        
+                                        </div>
+                                        <hr>
                                     <div>
                                         <input type="text" class="frm-name" id="frm-name" placeholder="Nombre del Problema">
                                     </div>
@@ -194,6 +203,13 @@
             <%= name %>
         </div>
         <hr>
+        <div class="exercise-type-problem">
+            <% if (type_problem === 'Grupal'){ %>
+                <h3>Problema: <%= type_problem %> - Grupos: <%= teamworks %></h3>
+                    <% }else{ %>
+                        <h3>Problema: <%= type_problem %></h3>
+                    <% }%>
+        </div>
         <div class="exercise-description">
             <%= description %>
         </div>
@@ -207,6 +223,11 @@
             @if($type === 'teacher')
                 <a class="btn-blue" href="{!! url('/maker/activities/<%= id %>') !!}">Editar Actividades</a>
                 <a class="btn-green" href="{!! url('/teacher/scores/<%= id %>') !!}">Ver Calificaciones</a>
+                <% if (type_problem === 'Grupal'){ %>
+                    <a class="btn-red" href="{!! url('/teacher/teamworks/<%= id %>') !!}">Grupos</a>
+                    <% }else{ %>
+
+                    <% }%>
             @endif
             @if($type === 'student')
                     <% if (open_at < "{!! $currentTimestamp !!}") { %>
@@ -223,7 +244,7 @@
             @endif
         </div>
     </script>
-
+    
 
 
 @stop

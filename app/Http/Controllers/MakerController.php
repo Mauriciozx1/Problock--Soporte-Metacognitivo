@@ -133,7 +133,12 @@ class MakerController extends Controller {
         $problem->description = $data['description'];
         $problem->open_at = $data['open_at'];
         $problem->close_at = $data['close_at'];
-
+        if($data['teamworks'] > 0){
+            $problem->type_problem = 'Grupal';
+        }else{
+            $problem->type_problem = 'Individual';
+        }
+        $problem->teamworks = $data['teamworks'];
         $problem->save();
 
         if($isNew) {
