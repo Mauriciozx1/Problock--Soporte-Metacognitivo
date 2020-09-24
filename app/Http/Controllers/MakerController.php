@@ -8,6 +8,8 @@ use CSLP\Modules\Models\Course;
 use CSLP\Modules\Models\GroupActivityLink;
 use CSLP\Modules\Models\Problem;
 use CSLP\Modules\Models\Resource;
+use CSLP\Modules\Models\Teamwork;
+use CSLP\Modules\Models\TeamworkInscription;
 use Input;
 
 class MakerController extends Controller {
