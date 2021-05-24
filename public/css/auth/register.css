@@ -1,0 +1,20 @@
+.form-container{
+    text-align: center;
+    margin-top: 3rem;
+    
+}
+
+input {
+    margin:0.5rem;
+}
+.form-content-register fieldset{
+    border:3px solid #650164;
+    display:inline-block;
+    text-align:center;
+}
+.form-content-register legend{
+    color:#800080;
+    font-size:2rem;
+    padding:0 1rem;
+}
+ 

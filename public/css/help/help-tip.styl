@@ -1,0 +1,202 @@
+@require '../base/base-color'
+
+// HELP TIP STYLE
+.help-tip
+  background-color: header-color
+  border: 2px solid transparent
+  border-radius: 50%
+  cursor: default
+  display: inline-block
+  font-size: 12px
+  height: 17px
+  line-height: 15px
+  position: relative
+  text-align: center
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1)
+  width: 17px
+  &:hover, &:focus
+    background-color: white
+    border-color: header-color
+    cursor: pointer
+    &:before
+      color: header-color
+    .help-tip-container
+        cursor: default
+        opacity: 1
+        transform: scale(1.0)
+        visibility: visible
+  &:before 
+    color: white
+    content: '?'
+    font-weight: bold
+    
+  &-container
+    background-color: header-color
+    border-radius: 4px
+    color: #fff
+    font-size: 13px
+    line-height: normal
+    padding: 10px
+    position: absolute
+    opacity: 0
+    right: -6px
+    text-align: left
+    top: 22px
+    transform: scale(0.7)
+    transform-origin: 100% 0%
+    transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1)
+    visibility: hidden
+    width: 300px
+    z-index: 1000
+    &:before
+      border: 6px solid transparent
+      content: ''
+      height: 0
+      position: absolute
+      right: 7px
+      top: -12px
+      width: 0
+    &:after
+      content: ''
+      height: 40px
+      left: 0
+      position: absolute
+      top: -5px
+      width: 100%
+      
+  &-title
+    border-bottom: 1px solid logo-color
+    color: logo-color
+    font-size: 14px
+    font-weight: bold
+    margin-bottom: 5px
+    padding-bottom: 4px
+    text-align: center
+  
+
+  //Posiciones
+    
+  &[data-tip-position="top-left"]
+    .help-tip-container
+      bottom: 22px
+      top: auto
+      transform-origin: 100% 100%
+      &:before
+        border-top-color: header-color
+        top: 100%
+        right: 7px
+        
+  &[data-tip-position="top"]
+    .help-tip-container
+      bottom: 22px
+      top: auto
+      left: 50%
+      transform: translateX(-50%)
+      &:before
+        top: 100%
+        border-top-color: header-color
+        left: 50%
+        transform: translateX(-50%)
+        
+  &[data-tip-position="top-right"]
+    .help-tip-container
+      left: -6px
+      bottom: 22px
+      top: auto
+      transform-origin: 0% 100%
+      &:before
+        border-top-color: header-color
+        left: 7px
+        top: 100%
+        
+  &[data-tip-position="bottom-left"]
+    .help-tip-container
+      &:before
+        border-bottom-color: header-color
+
+
+  &[data-tip-position="bottom"]
+    .help-tip-container
+      left: 50%
+      transform: translateX(-50%)
+      &:before
+        border-bottom-color: header-color
+        left: 50%
+        transform: translateX(-50%)
+        
+
+  &[data-tip-position="bottom-right"]
+    .help-tip-container
+      left: -6px
+      transform-origin: 0% 0%
+      &:before
+        border-bottom-color: header-color
+        left: 7px
+    
+  &[data-tip-position="right-bottom"]
+    .help-tip-container
+      left: 22px
+      top: -6px
+      transform-origin: 0% 0%
+      &:before
+        border-right-color: header-color
+        right: 100%
+        top: 7px
+        
+  &[data-tip-position="right"]
+    .help-tip-container
+      left: 22px
+      top: 50%
+      transform: translateY(-50%)
+      &:before
+        right: 100%
+        border-right-color: header-color
+        top: 50%
+        transform: translateY(-50%)
+        
+  &[data-tip-position="right-top"]
+    .help-tip-container
+      bottom: -6px
+      left: 22px
+      top: auto
+      transform-origin: 0% 100%
+      &:before
+        border-right-color: header-color
+        bottom: 7px
+        top: auto
+        right: 100%
+        
+  &[data-tip-position="left-bottom"]
+    .help-tip-container
+      right: 22px
+      top: -6px
+      &:before
+        border-left-color: header-color
+        left: 100%
+        top: 7px
+        
+  &[data-tip-position="left"]
+    .help-tip-container
+      right: 22px
+      top: 50%
+      transform: translateY(-50%)
+      &:before
+        left: 100%
+        border-left-color: header-color
+        top: 50%
+        transform: translateY(-50%)
+        
+  &[data-tip-position="left-top"]
+    .help-tip-container
+      bottom: -6px
+      right: 22px
+      top: auto
+      transform-origin: 100% 100%
+      &:before
+        border-left-color: header-color
+        bottom: 7px
+        top: auto
+        left: 100%
+        
+    
+

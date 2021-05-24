@@ -1,0 +1,222 @@
+@import 'nib'
+@require '../base/base-color'
+
+.section-selectors
+	margin-bottom: 3rem
+	padding-left: 4rem 
+	padding-top: 4rem
+	ul
+		list-style: none
+		margin: 0
+		padding: 0
+		li
+			border-bottom: 3px solid transparent
+			display: inline-block
+			padding: 0.7rem
+			font-size: 1.8rem
+			cursor: pointer
+			&.active
+				border-bottom-color: header-color
+			&:hover:not(.active)
+				border-bottom-color: #b602b4
+.sections-container
+	padding: 0 2rem 3rem 2rem
+	flex: 1
+	position: relative
+	padding-bottom: 0
+	box-sizing: border-box
+	overflow-y: auto
+	&>section
+		display: none
+		&.active
+			display: block
+			
+.no-courses, .courses-container
+	display: none
+.no-courses
+	text-align: center
+	font-size: 4rem
+	color: darkgray
+	padding-top: 4rem	
+	background: white
+	top: 0
+	left: 0
+	z-index: 1000
+
+	i
+		font-size: 17rem
+		margin-top: 3rem
+
+.exercises-maker-container
+	display: flex
+	height: calc(100vh - 70px)
+	.courses-aside-menu
+		background: rgba(black, 0.8)
+		color: white
+		overflow-y: auto
+		ul
+			list-style: none
+			padding: 0
+			margin: 0
+			li
+				cursor: pointer
+				display: block
+				padding: 1rem 2rem
+				
+				&:hover, &.active
+					background: rgba(white,0.1)
+					color: lighten(header-color, 60%)
+		
+		
+	.exercises-panel		
+		&>div:first-child
+			padding: 1.5rem 9rem 0.5rem 0
+			text-align: right
+		
+		.no-exercises-panel
+			text-align: center
+			display: block
+			font-size: 4rem
+			color: darkgray
+			padding-top: 4rem
+			
+			position: absolute
+			background: white
+			height: 100%
+			width: 100%
+			top: 0
+			left: 0
+			visibility: hidden
+			z-index: 1000
+
+			i
+				font-size: 17rem
+				margin-top: 3rem
+			&.active
+				visibility: visible
+				
+		&-content
+			height: 100%
+			width: 100%
+
+		.exercises-container
+			display: flex
+			flex-wrap: wrap
+			justify-content: space-around
+			
+			.exercise
+				box-shadow: 1px 1px 6px 0 rgba(black, 0.4)
+				border: 1px solid lightgray
+				margin: 2rem 0
+				padding: 2rem
+				padding-bottom: 1rem
+				position: relative
+				width: 45rem
+				
+				&:before
+					border: 8px solid header-color
+					border-bottom-color: transparent
+					border-right-color: transparent
+					content: ""
+					display: block
+					height: 0
+					left: 0 			
+					position: absolute
+					top: 0
+					width: 0
+
+				hr
+					background: transparent
+					border: 1px dotted lightgray
+					border-bottom-color: transparent
+				
+				
+				.btn-edit
+					color: lighten(header-color, 20%)
+					cursor: pointer
+					position: absolute
+					right: 1.5rem
+					top: 1.5rem
+					&:hover
+						color: header-color
+				&-name
+					font-size: 2rem
+					font-weight: bold
+				&-timestamps
+					span:nth-child(even)
+						font-weight: bold
+				&-footer
+					display: flex
+					justify-content: space-between
+					.problem-score
+						color: purple
+						font-size: 2.7rem
+	
+	.students-panel
+		.table-container
+			margin: auto
+			max-width: 900px
+			width: 90%
+			table
+				width: 100%
+				tr
+					&:hover
+						.btn-delete
+							visibility: visible
+					th
+						border-bottom: 2px solid lightgray
+						text-align: left
+					
+					td
+						border-bottom: 1px solid lightgray
+						&:first-child
+							padding-right: 1rem
+							text-align: right
+							img
+								height: 60px
+								border-radius: 50%
+						.btn-delete
+							color: darkred
+							visibility: hidden
+							font-weight: bold
+							&:hover
+								color: red
+								cursor: pointer	
+							
+
+.editor-modal
+	display: none
+	.modal-fade
+		background: rgba(black,0.8)
+		height: 100%
+		left: 0
+		position: fixed
+		top: 0
+		width: 100%
+		
+	.modal
+		text-align: center
+		width: 60rem
+		hr
+			background: transparent
+			border: 1px dotted lightgray
+			border-bottom-color: transparent
+		.modal-header
+			padding-bottom: 0
+			text-align: right
+			button
+				font-size: 1rem
+		.modal-body
+			textarea
+				width: 100%
+			.frm-name
+				font-size: 2.2rem
+				margin-bottom: 1rem
+				width: 100%
+					
+		.modal-footer
+			border-top: 1px solid lightgray
+			text-align: right
+		
+	
+		

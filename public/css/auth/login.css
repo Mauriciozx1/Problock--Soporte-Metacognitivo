@@ -1,0 +1,47 @@
+.form-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.img-login{
+    margin: 1rem;
+}
+.img-login fieldset{
+    border:3px solid #650164;
+    display:inline-block;
+    text-align:left;
+}
+.img-login fieldset legend{
+    color:#800080;
+    font-size:2rem;
+    padding:0 1rem
+}
+.form-container form fieldset{
+    border:3px solid #650164;
+    display:inline-block;
+    text-align:left;
+}
+.form-container form fieldset legend{
+    color:#800080;
+    font-size:2rem;
+    padding:0 1rem
+}
+.form-container form fieldset input{
+    font-size:2.6rem
+}
+.form-container fieldset .submit-container{
+    text-align:center;
+}
+.register{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.register p{
+    color: black;
+    margin: 0.5rem;
+}
+.register a{
+    color: #800080;
+    margin: 0.5rem;
+}

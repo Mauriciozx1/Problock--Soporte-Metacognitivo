@@ -1,0 +1,22 @@
+.teamwork-menu{
+    text-align: center;
+}
+.teamwork{
+    display: inline-block;
+    background-color: #fff;
+    margin: 1rem;
+    padding: 1rem;
+    border: 2px solid rgb(88, 13, 110);
+    border-radius: 5px 5px 5px 50px;
+    -moz-border-radius: 5px 5px 5px 5px;
+    -webkit-border-radius: 5px 5px 5px 5px;
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+    
+}
+.student-row{
+    text-align: start;
+}
+
+
