@@ -4,6 +4,7 @@ namespace CSLP\Http\Controllers;
 
 use Auth;
 use CSLP\Events\ScreenSent;
+use CSLP\Events\StatusSent;
 use CSLP\Events\TeamworkSent;
 use CSLP\Events\ActivitySent;
 use Carbon\Carbon;
@@ -21,6 +22,7 @@ use CSLP\ActivitiesGroup;
 use CSLP\LinkTeamworkInscription;
 use CSLP\TeamworkActivity;
 use CSLP\AnswerQuestion;
+use CSLP\StatusProblem;
 use Input;
 
 class WorkBoardController extends Controller {
@@ -28,7 +30,17 @@ class WorkBoardController extends Controller {
     public function getIndex() {
         return redirect('/problems');
     }
-
+    public function postState() {
+        $groupLink = GroupActivityLink::where('activity_id', Input::get('activity_id'))->first();
+        $groupActivity = ActivitiesGroup::where('id', $groupLink->group_id)->first();
+        $modelStatus = new StatusProblem;
+        $modelStatus->status = 'afk';
+        $modelStatus->user_id = Auth::user()->id;
+        $modelStatus->problem_id = $groupActivity->problem_id;
+        $modelStatus->save();
+        broadcast(new StatusSent($groupActivity->problem_id, $modelStatus))->toOthers();
+                
+    }
     public function getView($problemId) {
 
         if($problemId === null)
@@ -76,14 +88,14 @@ class WorkBoardController extends Controller {
             }    
         }  
         //Si es primera vez que entra, y el estudiante  fue agregado al curso se registra su estado.
-        /*$status = StatusProblem::where('user_id', '=', Auth::user()->id)->where('problem_id', '=', $problemId);
-        if(!$status){
-            $status = new StatusProblem;
-            $status->user_id = Auth::user()->id;
-            $status->problem_id = $problemId;
-            $status->status = 'online';
-            $status->save();
-        } */
+        $statusUser = StatusProblem::where('user_id', '=', Auth::user()->id)->where('problem_id', '=', $problemId)->first();
+        $status = null;
+        if($statusUser != null){
+            if($statusUser->status == 'afk'){
+                $status = 'error_outline';
+                
+            }
+        }
         //Obteniendo los scores obtenidos en las actividades
         if($problem->type_problem == 'Grupal'){
             $teamworkInscription = TeamworkInscription::where('problems_id', $problemId)->where('student_id', \Auth::user()->id)->get();
@@ -116,9 +128,9 @@ class WorkBoardController extends Controller {
                 }
             }
          
-            return view('/workboard/view', ['activityId' => $activitiId, 'userLider' => $userLider ,'userscount' => $teamwork['countUser'],'teamworkid' => $teamwork['id'],'studentUser' => Auth::user() ,'userId' => Auth::user()->id, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId,'teamwork' =>json_encode($teamwork)]);
+            return view('/workboard/view', ['myStatus' => $status, 'activityId' => $activitiId, 'userLider' => $userLider ,'userscount' => $teamwork['countUser'],'teamworkid' => $teamwork['id'],'studentUser' => Auth::user() ,'userId' => Auth::user()->id, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId,'teamwork' =>json_encode($teamwork)]);
         }else{
-            return view('/workboard/view', ['problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId]);}
+            return view('/workboard/view', ['myStatus' => $status, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId]);}
         
         
     }

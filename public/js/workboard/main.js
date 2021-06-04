@@ -17,6 +17,9 @@ $(document).ready(function() {
     window.resourcesModal = new CSLP.Workboard.Views.ResourcesModal({
         el : '#resources-modal'
     });
+    window.chatHelp = new CSLP.Workboard.Views.ChatHelp({
+        el : '#chat-help'
+    });
     window.finishModal = new CSLP.Workboard.Views.FinishModal({
         el : '#finish-modal'
     });
@@ -38,7 +41,10 @@ $(document).ready(function() {
     window.questionView = new CSLP.Workboard.Views.QuestionView({
         el : $('#modal-question')
     });
-
+    $( "#btn-reply" ).click(function() {
+        console.log('Hola');
+    });
+    
     
     //MODO DE EJECUCIÓN
     if(window.app.config.mode === 'fixed') {

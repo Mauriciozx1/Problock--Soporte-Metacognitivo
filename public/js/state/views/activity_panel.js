@@ -14,12 +14,12 @@ CSLP.State.Views.ActivityPanel = Backbone.View.extend({
     setActivity : function(activity) {
         if(this.currentActivity !== activity) {
             this.currentActivity = activity;
-            
-            window.objectivesSection.setActivity(activity);
             window.viewStudentsSection.setActivity(activity);
-           
+            window.objectivesSection.setActivity(activity);
+            
             this.$('.no-activity-panel').removeClass('active');
         }
+        window.statusView.resize();
     },
 
     /**

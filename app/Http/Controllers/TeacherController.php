@@ -33,19 +33,42 @@ class TeacherController extends Controller {
     public function getTeamwork($excerciseId = null){
         return view('teamwork/teacher-view', $this->getExerciseTeamwork($excerciseId));
     }
-    
+    public static function getState($user,$problemid){
+        $status = StatusProblem::where('problem_id', '=', $problemid)->where('user_id', $user->id)->first();
+        
+        $data = [];
+        if($status){
+            if($status->status == 'afk'){
+                $data['status'] = 'error_outline';
+                $data['color'] = 'orange';
+            }
+        }else{
+            $data['status'] = 'check_circle';
+            $data['color'] = 'green';
+        }
+        return $data;
+        
+    }
     public function getStates($problemid){
-        $status = StatusProblem::where('problem_id', '=', $problemid)->get();
+        
         $problem = Problem::find($problemid);
         $usersCourse = [];
         $studentsR = Student::all();
         $inscriptions = CourseInscription::where('course_id', '=', $problem->course_id)->pluck('user_id');
         foreach($inscriptions as $idUser){
+            $status = StatusProblem::where('problem_id', '=', $problemid)->where('user_id', $idUser)->first();
             $user = User::find($idUser);
             if($user->type == 'student'){
+                /*if($status){
+                    if($status->status == 'afk'){
+                        $user['status'] = 'error_outline';
+                        $user['color'] = 'orange';
+                    }
+                }*/
+                $user['status'] = 'highlight_off';
+                $user['color'] = 'red';
                 array_push($usersCourse, $user);
-            }
-                
+            }         
         }
     
         $infoTeamwork = $this->getExerciseTeamwork($problemid);
@@ -120,7 +143,10 @@ class TeacherController extends Controller {
             $teamworks['students'] = [];
             $userTeamwork = TeamworkInscription::where('teamwork_id', '=', $idTeam)->pluck('student_id');
             foreach($userTeamwork as $user) {
-                $userTest = User::where('id', '=', $user )->get()->first();
+                $userTest = User::where('id', '=', $user)->get()->first();
+                $userTest['status'] = 'highlight_off';
+                $userTest['color'] = 'red';
+                
                 array_push($teamworks['students'], $userTest);    
             }
             array_push($teamworkJSOArray, $teamworks);

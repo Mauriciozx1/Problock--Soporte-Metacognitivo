@@ -12,8 +12,12 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 
     <script>
+        user = {!!Auth::user()!!}
+        userStatus = {!!json_encode($myStatus)!!};
+        console.log(userStatus);
         activityGroups = {!! $problem !!};
         scores = {!! $scores !!};
+        var problemid = {!! $problemid !!};
         @if($type === 'Grupal')
             teamworks = {!! $teamwork !!};
             problemid = {!! $problemid !!};
@@ -111,6 +115,86 @@
     {{--WORKBOARD--}}
     <div id="workboard" class="frame">
     <div id="app">
+    @if($type != 'Grupal')
+        <div id="chat-help" class="chat">
+                
+            <button id="btn-chat-popup-help" class="btn-chat-help" > 
+                <div class="badge" >{{--notificationChat--}}</div>
+                <i class="material-icons"> help_center </i>
+            </button>
+           
+            <div class="content-chat">
+            <div id="chat-popup-help" class="chat-popup">
+                <div class="chat-body">
+                    <div class="title-chat" style="border: 0px solid; padding:0.5rem; border-radius:5px;" ><strong>Comunícate con el Profesor</strong> <span id="btn-capture" class="btn-capture" title="Tomar Captura">📷️</span></div>
+                        <div id="list-unstyled" class="list-unstyled" style="overflow-y:scroll; height:300px;" >
+                            <div id="p-2" class="p-2" >
+                                <div class="content-messages">
+                                    <div class="message-interger" style="background-color: rgb(213, 177, 242)">
+                                        <section  class="section-name-interger">
+                                            <div class="message-answer">
+                                                <section  class="section-name-interger">
+                                                    <div class="chat-name-interger">
+                                                        <strong>Sistema Problock</strong>
+                                                    </div>
+                                                    <div class="chat-message-interger">Aquí podrás comunicarte con el profesor, podrás mandar fotos de tu desarrollo de bloques, presionando 📷️.</div>
+                    
+                                                </section>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="message-interger" style="background-color: rgb(213, 177, 242)">
+                                        <section class="section-name-interger">
+                                            <div class="message-answer">
+                                                <section class="section-name-interger">
+                                                    <div class="chat-name-interger">
+                                                        <strong>Sistema Problock</strong>
+                                                    </div>
+                                                    <div class="chat-message-interger">También podrás responder los mensajes presionando ⤵️ que se visualizara en cada mensaje.</div>
+                                                    
+                                                </section>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-writing">
+                            <span class="text-muted" ></span>
+                        </div>
+                        
+                    
+                </div>
+                <div id="r-message-content-photo" class="r-message-content-photo" style="overflow-x: auto">
+                    <div class="view-capture" style="display: flex">
+                    </div>
+
+                </div>
+                <div id="r-message-content" class="r-message-content">
+                </div>
+                
+                <div class="text-chat">
+                <input  type="text" name="message" placeholder="Ingresa tu mensaje y presiona enter..." id="chat-message" class="chat-message">
+                <span class="btn-send-message" title="Enviar mensaje">▶️</span>
+                <span id="btn-emoji" class="btn-emoji" title="Emojis">😃</span>
+                
+                </div>
+                
+            </div>
+            <div id="emoji-popup" class="emoji-popup">
+                <emoji-picker style="height:200px;"></emoji-picker>
+            </div>
+            </div>
+            
+        </div>
+        <div id="modal-screen-zoom" class="modal-screen-zoom" >
+            <div id="close" class="closeZoomIMG" onclick="closezoom()">&times;</div>
+            <div class="conten-modal-screen-zoom">
+                <img class="content-img-screen" id="view-img-screen">
+                <div id="caption"></div>
+            </div>   
+    </div>
+    @endif
     <button id="btn-tour" class="btn-tour btn-blue">Tour</button>
         @if($type == 'Grupal')
         <div id="wait-group" class="wait-group">  
@@ -196,10 +280,22 @@
                     <img class="content-img-screen" id="view-img-screen">
                     <div id="caption"></div>
                 </div>   
-            </div>
+        </div>
         {{--CHAT Student a Student--}}
         <div id="chat" class="chat">
-            
+            <button id="btn-chat-popup-help" class="btn-chat-help" > 
+                <div class="badge" >{{--notificationChat--}}</div>
+                <i class="material-icons"> help </i>
+            </button>
+            <button id="btn-chat-group" class="btn-chat-group" > 
+                <div class="badge-group-chat" >{{--notificationChat--}}</div>
+                <i class="material-icons"> groups </i>
+            </button>
+            <button id="btn-chat-person" class="btn-chat-person" > 
+                <div class="badge-person-chat" >{{--notificationChat--}}</div>
+                <i class="material-icons"> person </i>
+            </button>
+
             <button id="btn-chat-popup" class="btn-chat" > 
                 <div class="badge" >{{--notificationChat--}}</div>
                 <i class="material-icons"> comment </i>
@@ -407,6 +503,7 @@
     <script src="{!! asset('/js/workboard/views/voteView.js') !!}"></script>
     <script src="{!! asset('/js/workboard/views/screenView.js') !!}"></script>
     <script src="{!! asset('/js/workboard/views/chatView.js') !!}"></script>
+    <script src="{!! asset('/js/workboard/views/chatHelp.js') !!}"></script>
     <script src="{!! asset('/js/workboard/views/questionView.js') !!}"></script>
     
     
@@ -415,6 +512,7 @@
    <script>
    //Funcion para crear un zoom a la imagen recibida en "screen-popup"
         function answerTo(element){
+
             if(this.$(".r-message-content").is(':visible'))
                 this.$('.r-message-content').hide(500);
 
@@ -423,6 +521,22 @@
             this.$("#r-message-content").html("");
             this.$(".r-message-content").append('<div class="rmessage"><section class="content-info-reply"><div class="title-info-reply"><span class="title-reply"><h5 style="margin:auto;">Responder mensaje:</h5></span><span class="btn-remove-reply" title="Eliminar mensaje seleccionado">X</span></div></section><section id="section-i" class="section-i"><div id="chat-i-name" class="chat-i-name"><strong>'+arrayName[1]+'</strong></div><div id="chat-i-message" class="chat-i-message">'+arrayName[2]+'</div></section></div></div>');
             window.chatView.setrMessage({id : element.id.substr(10), user_id : arrayName[0], username : arrayName[1], message : arrayName[2]});
+            this.$('.r-message-content').show(500);
+        }
+        function answerToHelp(element){
+            if(this.$(".r-message-content").is(':visible'))
+                this.$('.r-message-content').hide(500);
+
+            var id = element.id.substr(10);
+            var name = $('#'+element.id).attr('name');
+            var arrayName = name.split(':');
+            var nameUser = arrayName[1];
+            this.$("#r-message-content").html("");
+            window.chatHelp.setrMessage({id : element.id.substr(10), user_id : arrayName[0], username : nameUser, message : arrayName[2]});
+            if(arrayName[0] == window.user.id){
+                nameUser = 'Yo';
+            }
+            this.$(".r-message-content").append('<div class="rmessage"><section class="content-info-reply"><div class="title-info-reply"><span class="title-reply"><h5 style="margin:auto;">Responder mensaje:</h5></span><span class="btn-remove-reply" title="Eliminar mensaje seleccionado">X</span></div></section><section id="section-i" class="section-i"><div id="chat-i-name" class="chat-i-name"><strong>'+nameUser+'</strong></div><div id="chat-i-message" class="chat-i-message">'+arrayName[2]+'</div></section></div></div>');
             this.$('.r-message-content').show(500);
         }
         function zoomimg(img){

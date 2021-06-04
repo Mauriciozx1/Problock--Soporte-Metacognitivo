@@ -1,8 +1,12 @@
 $(document).ready(function() {
-    
+    window.interpreter = new CSLP.Workboard.Models.JSInterpreter();
+    window.codeTester = new CSLP.Workboard.Models.CodeTester();
     //Inicializacion de las Colecciones
     window.collections.activityGroups = new CSLP.State.Collections.ActivityGroups();
     
+    window.chatView = new CSLP.State.Views.ChatView({
+        el : $('#chat')
+    });
     //Inicializacion de las Vistas
     window.consolePanel = new CSLP.Workboard.Views.Console({
         el : $('#output-panel')
@@ -26,16 +30,19 @@ $(document).ready(function() {
     });
     window.collections.activityGroups.add(activityGroups);
 
-    window.statusView.resize();
-    /*$(window).load(function() {
-        
-        //Ajusta el tamaño del panel de blockly en base al nuevo ancho establecido
-        //Blockly se ajusta solo cuando se lanza un evento de resize en el window
-        window.dispatchEvent(new Event('resize'));
-
+    $( "#btn-chat-popup" ).click(function() {
+        window.chatView.show();
     });
-    */
+    
+    
     
 
 });
 
+var rulesToText = {
+    correct_result : "Resultado esperado",
+    use_variable : "Usar variables",
+    use_conditional : "Usar Condicionales",
+    use_loop : "Usar Ciclos",
+    use_function : "Usar Funciones"
+};

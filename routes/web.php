@@ -152,7 +152,7 @@ Route::get('workboard/activityinfo/{id}', 'WorkBoardController@getActivityinfo')
 Route::post('workboard/lider', 'WorkBoardController@postLider');
 Route::get('workboard/wait/{id}', 'WorkboardController@getWait');
 Route::post('workboard/answer','WorkBoardController@postAnswer');
-
+Route::post('workboard/state','WorkBoardController@postState');
 
 // Teacher
 Route::get('teacher/view/{id}', 'TeacherController@getStates');

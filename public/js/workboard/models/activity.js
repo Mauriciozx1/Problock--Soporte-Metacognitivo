@@ -82,7 +82,21 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
             model : this
         });
     },
-
+    setAFK : function() {
+        var self = this;
+        setTimeout(function(){
+            //CSLP.message.warning('AFK');
+            console.log('AFK');
+            $.post(basePath + '/workboard/state', {
+                activity_id : self.get('id'),
+                status : 'afk',  
+            }, function(response) {
+                //
+                
+            });
+        },10000);
+        
+    },
     //Guarda el progreso de la actividad en el servidor
     save : function(withMessage) {
         console.log(this);

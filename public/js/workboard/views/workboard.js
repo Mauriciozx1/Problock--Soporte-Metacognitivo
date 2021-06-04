@@ -11,6 +11,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         'mouseup' : 'resizerLock',
         'mousemove' : 'resizePanel',
         'click #btn-chat-popup' : 'toggleChat',
+        'click #btn-chat-popup-help' : 'toggleChatHelp',
         'click #btn-live-lider' : 'toggleShare',
         'click #button-popup-share' : 'viewShare',
         'click #button-popup-screen' : 'sendIMG',
@@ -57,6 +58,31 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         this.$('.badge').hide();
         this.$('.badge-popup-button-parent').hide();
         this.$('.badge-view-share').hide();
+        console.log(window.teamworkid);
+        console.log(window.userStatus);
+        var channel = Echo.join('status.'+ window.problemid);
+        channel.joining(data =>{
+            if(data.user.type == 'teacher'){
+                if(window.userStatus){
+                    channel.whisper('update',{user: window.user, data : {status: window.userStatus, color: 'orange'}});
+                }else{
+                    channel.whisper('update',{user: window.user, data : {status : 'check_circle', color: 'green'}});
+                }
+            }
+        })
+        channel.listenForWhisper('messageHelp', data =>{
+            
+            if(data.id == window.user.id){
+                console.log(data);
+                window.chatHelp.message = data;
+                window.chatHelp.newMessage();
+            }
+            if(window.teamworkid == data.id){
+                //window.chatHelp.newMessageTeam(data.message);
+                console.log(data);
+            }
+        })
+        
     },
     sendIMG : function(){
         if($('.screen-popup').is(':visible')){
@@ -89,10 +115,25 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             $('.screen-popup').toggle(200);
         }
     },
-     toggleChat : function() {
+    toggleChat : function() {
+        if(this.$('.btn-chat-person').is(':visible')){
+            this.$('.btn-chat-person').toggle('slow');
+            this.$('.btn-chat-group').toggle('slow');
+        }
+        window.chatView.show();
         console.log($('.p-2').height());
         this.$('.badge').hide();
-        window.chatView.show();
+        this.nNewMessage = 0;
+        this.$('.badge').html("");
+        $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 3000);
+        
+    },
+    toggleChatHelp : function() {
+        console.log($('.p-2').height());
+        this.$('.badge').hide();
+        this.$('.btn-chat-person').toggle('slow');
+        this.$('.btn-chat-group').toggle('slow');
+        window.chatHelp.show();
         this.nNewMessage = 0;
         this.$('.badge').html("");
         $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 3000);
@@ -129,13 +170,8 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             if(this.currentActivity != undefined){
                 this.currentActivity.set('selected', false);
             if(this.currentActivity.get('problem_type') == 'Grupal'){
-                    if(activityModel.get('problem_type') == 'Grupal'){
-                        Echo.leave('workspace.'+this.currentActivity.get('id')+this.currentActivity.get('teamwork'));
-                    }
-                    if(activityModel.get('problem_type') == 'Individual'){
-                        Echo.leave('workspace.'+this.currentActivity.get('id')+this.currentActivity.get('teamwork'));
-                        //Echo.leave('chat-team.'+this.currentActivity.get('teamwork'));
-                    }
+                    Echo.leave('workspace.'+this.currentActivity.get('id')+this.currentActivity.get('teamwork'));
+                    
                 }
                 
             }
@@ -170,10 +206,18 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             }
             this.setLoading(true);
             this.currentActivity.fetchInfo();
+            console.log(this.currentActivity);
+            if(!window.userStatus){
+                //CSLP.message.warning('AFK');
+                console.log('AFK');
+                this.currentActivity.setAFK();
+            }
+            
             //Solicitar la carga de los datos del modelo    
         }
         
     },
+    
     viewMenu : function(){
         console.log('Hola View Menu');
         $('#activities-menu').toggleClass('visible');
