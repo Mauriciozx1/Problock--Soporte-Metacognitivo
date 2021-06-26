@@ -76,7 +76,7 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
     },
 
     newNotification : function(data){
-        if(this.viewOn == false){
+        if(!$('#view-students-section').hasClass('active')){
             this.notificationView++;
             $('#badge-list').html(''+this.notificationView+'').show(400);
         }

@@ -216,9 +216,9 @@
 
                     {{--VIEW STUDENTS SECTION--}}
                     <section class="objectives-section section active" id="view-students-section">
-                        <div class="frame-content-left">
+                        <div class="frame-content-left" style="overflow-y: auto">
                             {{--EXECUTION CONTROLS--}}
-                            <div class="activities-list" style="margin-bottom: 1rem;">
+                            <div class="activities-list" style="margin-bottom: 1rem; overflow">
                                 
                                 <hr>
                                 <div id="title-list-activities" class="title-list-activities" style="text-align: center; ">
