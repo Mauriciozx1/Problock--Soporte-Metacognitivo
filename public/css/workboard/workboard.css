@@ -1,3 +1,16 @@
+.badge-help{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    color:white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top:-10px;
+    right: -10px;
+}
 .btn-delete-capture{
     background: none;
     border: none;
@@ -308,7 +321,7 @@
     opacity: 0.8;
     transition: opacity 0.3s;
     box-shadow: 0 5px 5px rgba(0,0,0,0.4);
-    z-index: 12;
+    z-index: 13;
 }
 .btn-chat-group{
     display: none;
@@ -323,7 +336,7 @@
     opacity: 0.8;
     transition: opacity 0.3s;
     box-shadow: 0 5px 5px rgba(0,0,0,0.4);
-    z-index: 12;
+    z-index: 13;
 }
 .btn-chat-help{
     position: fixed;
@@ -331,13 +344,13 @@
     bottom: 5rem;
     background: rgb(77, 17, 100);;
     color: white;
-    width:50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     opacity: 0.8;
     transition: opacity 0.3s;
     box-shadow: 0 5px 5px rgba(0,0,0,0.4);
-    z-index: 12;
+    z-index: 13;
 }
 .btn-chat-group:hover{
     opacity: 1;
@@ -496,7 +509,7 @@
   .modal-screen-zoom {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 9; /* Sit on top */
+    z-index: 11; /* Sit on top */
     padding-top: 100px; /* Location of the box */
     left: 0;
     top: 0;
@@ -950,6 +963,9 @@
     bottom:1rem;
     right:9rem;
 }
+.frame-content .loading-container-restart{background:#fff;height:100%;left:0;opacity:0;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";filter:alpha(opacity=0);position:absolute;-webkit-transition:0.8s;-moz-transition:0.8s;-o-transition:0.8s;-ms-transition:0.8s;transition:0.8s;top:0;visibility:hidden;width:100%;white-space:nowrap;z-index:50;}
+.frame-content .loading-container-restart.active{opacity:1;-ms-filter:none;filter:none;visibility:visible}
+.frame-content .loading-container-restart .loading-restart:before{color:#650164;content:'Cambiando de grupo...';font-size:20px;font-weight:bold;left:50%;position:absolute;top:110%;-webkit-transform:translateX(-50%);-moz-transform:translateX(-50%);-o-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%)}
 
 .frame-header #btn-next-team{position:absolute;bottom:1rem;right:1rem}
 .finish-modal .modal-footer .btn-next-group{right:1rem}

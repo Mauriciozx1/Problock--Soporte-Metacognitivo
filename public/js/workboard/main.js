@@ -5,6 +5,7 @@ $(document).ready(function() {
     });
     window.interpreter = new CSLP.Workboard.Models.JSInterpreter();
     window.codeTester = new CSLP.Workboard.Models.CodeTester();
+    window.tempo = new CSLP.Workboard.Models.Tempo();
     window.parser = new CSLP.Workboard.Models.IMSLDParser({
         exerciseXML : $('#imsld-exercise').html()
     });  
@@ -43,6 +44,12 @@ $(document).ready(function() {
     });
     $( "#btn-reply" ).click(function() {
         console.log('Hola');
+    });
+    $( "#btn-chat-group" ).click(function() {
+        window.chatHelp.setChatGroup();
+    });
+    $( "#btn-chat-person" ).click(function() {
+        window.chatHelp.setChatPerson();
     });
     
     

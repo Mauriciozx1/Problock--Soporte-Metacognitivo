@@ -59,9 +59,10 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
     //Obtiene la informacion de la actividad del servidor
     fetchInfo : function() {
         //Si ya contiene la informacion necesaria
-        console.log(this);
+        console.log(this.fetched)
         if(this.fetched) {
             window.WB.renderActivityInfo();
+            
             window.WB.setLoading(false);
         } else {
             var self = this;
@@ -69,6 +70,10 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
             $.get(basePath + '/workboard/activityinfo/' + this.get('id'), function(response) {
                 self.set('answer', response.answer || '');
                 self.set('score', response.score || 0);
+                self.set('teamwork', response.idTeamwork || 0);
+                window.userStatus = response.status;
+                window.teamworkid = response.idTeamwork;
+                console.log(response);
                 window.WB.renderActivityInfo();
                 self.fetched = true;
                 window.WB.setLoading(false);
@@ -83,18 +88,56 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
         });
     },
     setAFK : function() {
+        //Enviar Estado Ausente.
         var self = this;
-        setTimeout(function(){
+        var tempoAfk = setTimeout(function(){
             //CSLP.message.warning('AFK');
-            console.log('AFK');
+            console.log('afkUser');
             $.post(basePath + '/workboard/state', {
                 activity_id : self.get('id'),
                 status : 'afk',  
             }, function(response) {
-                //
-                
+                $('#btn-chat-popup-help').prop('disabled', false).show(400);
+                CSLP.message.success('<span>Se ha habilitado la función "Ayuda". <br>Puedes comunicarte con el Profesor presionando el botón.</span>');
+                window.tempo.set('id_afk', 0);
             });
-        },10000);
+            
+        },300000);
+        window.tempo.set('id_afk', tempoAfk);
+         
+    },
+    setOfflineAFK : function(){
+        //Estado de Usuario Desconectado por mas de 10 minutos.
+        var self = this;
+        //CSLP.message.warning('AFK');
+        console.log('afkTeam');
+        $.post(basePath + '/workboard/state', {
+            activity_id : self.get('id'),
+            status : 'afkTeam',
+            teamwork_id : self.get('teamwork')
+        }, function(response) {
+            CSLP.message.warning('Se ha notificado al profesor la ausencia de integrantes dentro del equipo.');
+            //window.WB.modelWait.set('status', false);
+            $('.loading-container-restart').addClass('active');
+            setTimeout(function(){
+                location.reload();
+            },1000);
+            
+            
+        });
+            
+        
+    },
+    changeStatus : function(){
+        var self = this;
+        //CSLP.message.warning('AFK');
+        console.log('online');
+        $.post(basePath + '/workboard/state', {
+            activity_id : self.get('id'),
+            status : 'online'  
+        }, function(response) {
+            $('#btn-chat-popup-help').prop('disabled', true).hide(400);
+        });
         
     },
     //Guarda el progreso de la actividad en el servidor

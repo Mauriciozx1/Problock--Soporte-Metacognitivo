@@ -6,22 +6,81 @@
 
 @section('head')
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="{!! asset('/js/vendor/html2canvas.min.js') !!}"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>    
 <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link href="{!! asset('/css/maker/make.css') !!}" rel="stylesheet">
     {{ csrf_field() }}
     <script>
+   
     var viewMode = true;
     var teacher = {!!Auth::user()!!}
     //var status = {!! json_encode($status) !!};
     var students = {!! json_encode($usersCourse) !!};
-    var infoTeamwork = {!! json_encode($infoTeamwork) !!};
+    var infoTeamwork = {!! $infoTeamwork !!};
+    var infoTeamworks = {!! $infoTeamwork !!};
     activityGroups = {!! $problem !!};
-    var idProblem = {!! $idProblem!!};
+    var idProblem = {!! $idProblem !!};
     </script>
 @stop
 
 @section('content')
+
+    {{--FINISH MODAL--}}
+    <div id="modal-regrup" class="finish-modal">
+        <div class="modal-fade"></div>
+        <div class="modal-regrup">
+            <div class="modal-title">
+                <div class="activity-result-status">
+                    <i class="material-icons abs-center">mood</i>
+                </div>
+            </div>
+            <div><h1>Editar Grupos de Trabajo</h1>
+            </div>
+            <b>Mover estudiante:</b> Se debe arrastrar al grupo de destino.
+            <b>Eliminar Grupo:</b> Se debe arrastrar a <span class="material-icons">delete</span>
+            <b>Agregar Grupo:</b> Presionando boton <span class="material-icons">group_add</span>
+            <div id="modal-content" class="modal-content">
+                <div id ="no-team-content"class="list-student-status" style="text-align: center; margin:2rem; display:none;">
+                    <span class="name-team">Estudiantes sin Equipo</span>
+                    <div id="no-team" class="content-interger" style="display:grid;">
+
+                    </div>
+                    <span id="no-team-warning" style="font-size: 1.4rem; display:none; color: red;">*No se puede aplicar cambios con estudiantes sin equipo </span>
+                </div>
+                <div class="options" style="text-align: center;">
+                    <button id="btn-add-team" class="btn-green btn-success" title="Agregar Grupo"><span class="material-icons">
+                        group_add
+                        </span></button>
+                    <button id="btn-delete" ondrop="dropDelete(event)" ondragover="allowDrop(event)" class="btn-red btn-blue" title="Eliminar"><span class="material-icons">
+                        delete
+                        </span></button>
+                   <!-- <button id="btn-restart" class="btn-blue btn-blue" title="Restaurar valores"><span class="material-icons">
+                        restart_alt
+                        </span></button>-->
+                        
+                </div>
+                <span id="move-warning" style="font-size: 1.4rem; display:none; color: red;">*Movimiento invalido</span>
+                <div class="code-panel-container" style="overflow-y: scroll; height:250px;">
+                    <div id="list-activity-regrup" class="content-list" style="display: flex">
+                        
+                    </div>
+                    
+
+                </div>
+                
+                
+            </div>
+            
+            <div class="modal-footer">
+                <span id="team-full-warning" style="display: none; color: red;">*Los grupos deben de contener como max 3 integrantes.</span>
+                <span id="team-nofull-warning" style="display: none; color: red;">*Los grupos deben de contener al menos 1 estudiante.</span>
+                <button id="btn-regroups" class="btn-green btn-success">Aplicar Cambios</button>
+                <button id="btn-close-regrup" class="btn-red btn-blue">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="chat" class="chat">
                 
         <button id="btn-chat-popup" class="btn-chat" > 
@@ -30,14 +89,7 @@
         </button>
         <div class="content-chat">
         <div id="chat-popup" class="chat-popup">
-            <div class="persons-body-chat" style="display: none">
-                <div id="menu-person" class="title-chat" style="cursor: pointer;"><strong>Historial Chat</strong></div>
-                <div class="content-person">
-                    <div  class="list-person" style="overflow-y:scroll; height:50px; display:none;" >
-                        
-                    </div>
-                </div>
-            </div>
+            
             <div class="chat-body">
                 <div id="title-chat" class="title-chat" ></div>
                 
@@ -58,7 +110,11 @@
                 
             </div>
             
+            <div id="r-message-content-photo" class="r-message-content-photo" style="overflow-x: auto">
+                <div class="view-capture" style="display: flex">
+                </div>
 
+            </div>
             <div id="r-message-content" class="r-message-content">
             </div>
             
@@ -74,6 +130,13 @@
         </div>
         </div>
         
+    </div>
+    <div id="modal-screen-zoom" class="modal-screen-zoom">
+        <div id="close" class="closeZoomIMG" onclick="closezoom()">&times;</div>
+        <div class="conten-modal-screen-zoom">
+            <img class="content-img-screen" id="view-img-screen">
+            <div id="caption"></div>
+        </div>   
     </div>
     <div id="maker-container" class="maker-container">
         <div id="activities-menu" class="maker-aside-menu">
@@ -98,8 +161,11 @@
                 
                 <div class="section-selector" id="section-selector">
                     <span id="selector-objectives" class="selector-option no-select" data-target="#objectives-section">Objetivos Pedagógicos</span>
-                    <span id="selector-view-students" class="selector-option no-select active" data-target="#view-students-section">Visualizacion de Estudiantes</span>
+                    <span id="selector-view-students" class="selector-option no-select active" data-target="#view-students-section">Visualizacion de Estudiantes<div id="badge-list" class="badge-view" style="display:none"></div></span>
                 </div>
+
+                
+
                 {{--ACTIVITY INFO--}}
                 <div id="activity-info-section" class="activity-info">
 
@@ -158,6 +224,9 @@
                                 <div id="title-list-activities" class="title-list-activities" style="text-align: center; ">
                                     <strong>Lista de Estudiantes</strong><p>Presiona el nombre del estudiante para poder abrir una comuncación con el.</p>
                                 </div>
+                                @if($type === "Grupal")
+                                <div id="content-options-grups" style="text-align: center"><button class="options-grups">Editar Grupos<span class="btn-edit material-icons">edit</span></button></div>
+                                @endif
                                 <div id="list-activity" class="list-activity" style="text-align: center; ">
                                     
                                 </div>
@@ -227,6 +296,7 @@
     <script src="{!! asset('/js/workboard/models/js_interpreter.js') !!}"></script>
     <script src="{!! asset('/js/workboard/models/resource.js') !!}"></script>
     <script src="{!! asset('/js/workboard/models/chat.js') !!}"></script>
+    <script src="{!! asset('/js/state/models/teamworks.js') !!}"></script>
     
     
 
@@ -243,7 +313,7 @@
     <script src="{!! asset('/js/state/views/view_students.js') !!}"></script>
     <script src="{!! asset('/js/state/views/activity_panel.js') !!}"></script>
     <script src="{!! asset('/js/state/views/chatView.js') !!}"></script>
-    
+    <script src="{!! asset('/js/state/views/regrups.js') !!}"></script>
     <script src="{!! asset('/js/state/views/objectives_setter.js') !!}"></script>
     <script src="{!! asset('/js/state/views/status.js') !!}"></script>
 
@@ -264,6 +334,25 @@
     
         
     <script>
+
+        function allowDrop(ev) {
+            window.regrups.allowDrop(ev);
+        }
+
+        function startDragTeam(ev) {
+            window.regrups.startDragTeam(ev);
+
+        }
+        function startDragStudent(ev) {
+            window.regrups.startDragStudent(ev);
+        }
+        function dropTeam(ev) {
+            window.regrups.dropTeam(ev);
+        }
+        function dropDelete(ev) {
+            window.regrups.dropDelete(ev);
+        }
+        
         function answerTo(element){
             if(this.$(".r-message-content").is(':visible'))
                 this.$('.r-message-content').hide(500);
@@ -274,6 +363,9 @@
             this.$(".r-message-content").append('<div class="rmessage"><section class="content-info-reply"><div class="title-info-reply"><span class="title-reply"><h5 style="margin:auto;">Responder mensaje:</h5></span><span class="btn-remove-reply" title="Eliminar mensaje seleccionado">X</span></div></section><section id="section-i" class="section-i"><div id="chat-i-name" class="chat-i-name"><strong>'+arrayName[1]+'</strong></div><div id="chat-i-message" class="chat-i-message">'+arrayName[2]+'</div></section></div></div>');
             window.chatView.setrMessage({id : element.id.substr(10), user_id : arrayName[0], username : arrayName[1], message : arrayName[2]});
             this.$('.r-message-content').show(500);
+        }
+        function closezoom(){
+            $('.modal-screen-zoom').fadeOut('slow');
         }
     </script>
     <script type="text/template" id="activity-group-template">

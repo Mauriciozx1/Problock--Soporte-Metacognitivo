@@ -10,25 +10,28 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Auth;
-
-class StatusSent implements ShouldBroadcast
+use CSLP\Teamwork;
+class StatusTeamSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $problemid;
+    public $teamworkid;
     public $data;
-    public $user;
-    
+    public $problemid;
+    public $teamwork;
+    public $teamworks;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($problemid, $data)
+    public function __construct($problemid, $teamworkid, $data, $teamworks)
     {
         $this->problemid = $problemid;
+        $this->teamwork = Teamwork::where('id', $teamworkid)->first();
         $this->data = $data;
-        $this->user = Auth::user();
+        $this->teamworkid = $teamworkid;
+        $this->teamworks = json_decode($teamworks);
         //
     }
 
@@ -45,10 +48,9 @@ class StatusSent implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        if($this->data == null){
-            return ('change-afk');
-        }else{
-            return ('afk');
-        }  
+        
+        return ('changeTeamStatus');
+        
+        
     }
 }

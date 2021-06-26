@@ -159,6 +159,7 @@ CSLP.Workboard.Views.FinishModal = Backbone.View.extend({
 
     nextActivity : function(){
         window.WB.nextActivity();
+        window.WB.changeStatus();
         this.hide();
     }
 });

@@ -22,32 +22,23 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
 
     jWindow : undefined,
     jFrame : undefined,
-
     isHResizerLocked : true,
     isVResizerLocked : true,
-
     bySteps : false,
-
-    currentActivity : undefined,
-
-    currentWait : undefined,
-    
+    currentActivity : undefined,   
     wait : [],
-
     prevActivity :null,
-
     user : undefined,
-
-    screen : undefined,
-    
+    screen : undefined,  
     chat : undefined,
-
     nNewMessage : 0,
-
     nNewScreen : 0,
+
+
 
     initialize : function() {
         //Reajuste de la pantalla de trabajao dependiendo del cambio de tama�o de la ventana
+        
         this.jWindow = $(window);
         this.jFrame = this.$('#frame-content');
         var self = this;
@@ -58,31 +49,104 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         this.$('.badge').hide();
         this.$('.badge-popup-button-parent').hide();
         this.$('.badge-view-share').hide();
+        
+        
+    },
+    setConectionStatus : function(){
+        var teamwork = window.teamworkid;
+        var statusTeam = window.statusTeam;
         console.log(window.teamworkid);
-        console.log(window.userStatus);
+        if(teamwork != null && statusTeam == null && this.currentActivity.get('type') == 'Grupal'){
+            this.onChronometer();
+        }
+        var statusUser = window.userStatus;
+
         var channel = Echo.join('status.'+ window.problemid);
+        channel.here( data => {
+            console.log(data);
+        })
         channel.joining(data =>{
             if(data.user.type == 'teacher'){
-                if(window.userStatus){
-                    channel.whisper('update',{user: window.user, data : {status: window.userStatus, color: 'orange'}});
-                }else{
+                if(statusUser == 'error_outline'){
+                    channel.whisper('update',{user: window.user, data : {status: 'error_outline', color: 'orange'}});
+                }
+                if(statusUser == 'check_circle'){
                     channel.whisper('update',{user: window.user, data : {status : 'check_circle', color: 'green'}});
                 }
             }
         })
         channel.listenForWhisper('messageHelp', data =>{
-            
-            if(data.id == window.user.id){
+            $('#btn-chat-popup-help').prop('disabled', false).show(400);
+            console.log(data.id);
+
+            if(data.id == window.user.id && teamwork == null){
                 console.log(data);
                 window.chatHelp.message = data;
                 window.chatHelp.newMessage();
+                window.chatHelp.newNotification('help');
             }
-            if(window.teamworkid == data.id){
-                //window.chatHelp.newMessageTeam(data.message);
-                console.log(data);
+            if(teamwork != null){
+                if(window.teamworkid == data.id){
+                    window.chatHelp.newMessageTeam(data);
+                    window.chatHelp.newNotification('group');
+                }
+                if(data.id == window.user.id){
+                    window.chatHelp.newMessageTeam(data);
+                    window.chatHelp.newNotification('person');
+                }
+                console.log(window.teamworkid);
+                window.chatHelp.newNotification('help');
             }
         })
+        //Solicitud para cambiar Grupo
+        channel.listen('.updateTeam', data =>{
+            var teamworkid = null;
+            data.teamworks.forEach(element => {
+                var count = 0;
+                teamworkid = element.id;
+                element.students.forEach(element => {
+                    count++;
+                    if(element.id == window.user.id && window.teamworkid != teamworkid){
+                        this.resetActivity();
+                    }
+                    if(element.id == window.user.id && window.teamworkid == teamworkid){
+                        CSLP.message.warning('En 60 segundos un integrante se cambiara de grupo.');
+                        window.usercount = count;
+                    }
+                });
+            });
+        })
+    },
+    resetActivity : function(){
+        CSLP.message.warning('En 60 segundos te cambiaras de grupo.');
+        if(window.tempo.get('id')){
+            clearInterval(window.tempo.get('id'));
+        }
+        var seg = 0;
+        var tempoReset = setInterval(function(){
+            
+            if(seg == 30){
+                CSLP.message.warning('Quedan 30 segundos para cambiarte de grupo');
+            }
+            if(seg == 50){
+                CSLP.message.warning('Quedan 10 segundos para cambiarte de grupo');
+
+            }
+            if(seg == 55){
+                this.$('.loading-container-restart').addClass('active');
+            }
+            if(seg == 60){
+                clearInterval(tempoReset);
+                location.reload();
+
+            }
+            seg++;
+            console.log(seg);
+        }, 1000);
         
+    },
+    changeStatus(){
+        this.currentActivity.changeStatus();
     },
     sendIMG : function(){
         if($('.screen-popup').is(':visible')){
@@ -125,7 +189,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         this.$('.badge').hide();
         this.nNewMessage = 0;
         this.$('.badge').html("");
-        $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 3000);
+        $('#list-unstyled').animate({ scrollTop: $('#p-2').height() }, 3000);
         
     },
     toggleChatHelp : function() {
@@ -136,7 +200,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         window.chatHelp.show();
         this.nNewMessage = 0;
         this.$('.badge').html("");
-        $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 3000);
+        $('#list-unstyled').animate({ scrollTop: $('#p-2-help').height() }, 3000);
         
     },
     newNotification : function(methode){
@@ -160,33 +224,41 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
     //Cambia la actividad en la que se esta trabajando
     changeActivity : function(activityModel) {
         //Si la actividad seleccionada es distinta que la actual
-        
         if(this.currentActivity != activityModel) {
-            var isFirst = false;
+            /*var isFirst = false;
 
             if(this.currentActivity == undefined){
                 isFirst = true;
-            }
+            }*/
             if(this.currentActivity != undefined){
-                this.currentActivity.set('selected', false);
-            if(this.currentActivity.get('problem_type') == 'Grupal'){
+                this.currentActivity.set('selected', false);    
+                if(this.currentActivity.get('problem_type') == 'Grupal'){
                     Echo.leave('workspace.'+this.currentActivity.get('id')+this.currentActivity.get('teamwork'));
-                    
+                        
                 }
-                
             }
             
             this.currentActivity = activityModel;
             this.currentActivity.set('selected', true);
             
             if(this.currentActivity.get('type') == 'Individual' || this.currentActivity.get('type') == null){
+                //clearInterval(window.tempo.get('id'));
                 this.$('.buttons-lider').hide();
                 this.$('.wait-group').hide();
                 this.$('.screen').hide();
                 this.$('.buttons').html('<button id="btn-save" class="btn-green">Guardar</button><button id="btn-finish" class="btn-blue">Finalizar</button>');
-
+                if(window.userStatus == 'check_circle'){
+                    console.log('AFK');
+                    window.WB.currentActivity.setAFK();
+                    $('#btn-chat-popup-help').prop('disabled', true).hide(400);
+                }
+                if(window.userStatus == 'error_outline'){
+                    console.log('NOAFK');
+                    $('#btn-chat-popup-help').prop('disabled', false).show(400);
+                }
             }
             if(this.currentActivity.get('type') == 'Grupal'){
+                
                 this.$('.buttons-wait').fadeIn(2000);
                 window.voteView.cancel();
                 this.$('.buttons').html("");
@@ -202,22 +274,62 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                     $('.btn-next-team').hide();
                 }
                 
-
+                
             }
             this.setLoading(true);
             this.currentActivity.fetchInfo();
-            console.log(this.currentActivity);
-            if(!window.userStatus){
-                //CSLP.message.warning('AFK');
-                console.log('AFK');
-                this.currentActivity.setAFK();
-            }
             
-            //Solicitar la carga de los datos del modelo    
+            console.log(window.userStatus);
+            
+            this.setConectionStatus();
+               
         }
         
     },
-    
+    onChronometer : function(){
+        var sg = 10;
+        var mn = 00;
+        var online = window.chatView.online;
+        console.log(online);
+        if(online.length != window.usercount){
+            var tempo = setInterval(function(){
+                window.tempo.set('id', tempo);
+                sg = window.tempo.get('seconds');
+                mn = window.tempo.get('minutes');
+                console.log(window.teamworkid);
+                if(sg < 10 && window.tempo.get('pivotesg') == false){
+                    sg = '0'+sg;
+                }
+                if(mn < 10 && window.tempo.get('pivotemn') == false){
+                    mn = '0'+mn;
+                    window.tempo.set('pivotemn', true);
+                }
+                this.$('#chronometer').html('<strong>Tiempo de Espera: '+mn+':'+sg+'</strong>');
+                
+                
+                if(mn == 00 && sg == 00){
+                    console.log('Tiempo Terminado');
+                    clearInterval(tempo);
+                    window.WB.currentActivity.setOfflineAFK();
+                }
+                if(sg == 00 && mn > 0){
+                    mn--;
+                    sg = 59;
+                    window.tempo.set('pivotemn', false);
+                }else{
+                    sg--;
+                }
+                window.tempo.update(sg, mn);
+            },1000); //poner en marcha el temporizador.
+        }
+        if(window.chatView.online.length == window.usercount){
+            if(window.tempo.get('id') != 0){
+                clearInterval(window.tempo.get('id'));
+                window.tempo.reset();
+            }
+        }
+    },
+
     viewMenu : function(){
         console.log('Hola View Menu');
         $('#activities-menu').toggleClass('visible');
@@ -247,7 +359,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         Echo.join('workspace.' +this.currentActivity.get('id')+window.teamworkid)
             .here(user => {
                 this.wait.push(user[0]);
-                modelWait.update(this.wait);
+                modelWait.update(this.wait, 0, 10);
                 this.user = user[0];
             }) 
 
@@ -271,27 +383,39 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             //Actualizamos el array a todos los usuarios
             .listenForWhisper('update', data => {
                 this.wait = data.arrayWait;
+                window.tempo.update(data.sg, data.mn);
+                window.tempo.set('pivotemn', true);
                 modelWait.update(this.wait);
                 
             })
             
             .joining(user => {
-                CSLP.message.success( user.name+' '+user.flastname + ' se ha conectado.');
                 this.wait.push(user);
                 modelWait.update(this.wait);
+                var mn = window.tempo.get('minutes');
+                var sg = window.tempo.get('seconds');
+                console.log(this.sg);
+                console.log(this.mn);
                 Echo.join('workspace.'+this.currentActivity.get('id')+window.teamworkid)
-                    .whisper('update',{arrayWait : this.wait})
-                
-                
+                    .whisper('update',{arrayWait : this.wait, sg : sg, mn : mn})  
+
+                CSLP.message.success( user.name+' '+user.flastname + ' se ha conectado.');
                 
             })
             .leaving(user => {
                 this.wait = this.wait.filter(u => u.id != user.id);
                 CSLP.message.error( user.name+' '+user.flastname + ' se ha desconectado.');
-                
+                var statusVote = window.voteView.modelVote.get('status');
+                var statusFinish = window.voteView.modelVote.get('statusFinish');
+                var mn = window.tempo.get('minutes');
+                var sg = window.tempo.get('seconds');
                 Echo.join('workspace.'+this.currentActivity.get('id')+window.teamworkid)
-                    .whisper('update',{arrayWait : this.wait})
+                    .whisper('update',{arrayWait : this.wait, sg : sg, mn : mn})
                 modelWait.update(this.wait);
+                modelWait.set('status', true);
+                if(window.tempo.get('id') == 0){
+                    this.onChronometer();
+                }
                 if(statusVote == true && statusFinish == false){
                     window.voteView.cancel();
                 }

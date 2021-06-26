@@ -8,6 +8,7 @@ use CSLP\Problem;
 use CSLP\Score;
 use CSLP\Student;
 use CSLP\TeamworkInscription;
+use CSLP\TeamworkActivity;
 use CSLP\Teamwork;
 use CSLP\Course;
 use CSLP\CourseInscription;
@@ -15,6 +16,10 @@ use CSLP\User;
 use CSLP\LinkTeamworkInscription;
 use CSLP\Questions;
 use CSLP\StatusProblem;
+use CSLP\StatusTeam;
+use CSLP\Events\TeamworkUpdate;
+use Input;
+use Auth;
 class TeacherController extends Controller {
 
     public function getIndex() {
@@ -34,13 +39,16 @@ class TeacherController extends Controller {
         return view('teamwork/teacher-view', $this->getExerciseTeamwork($excerciseId));
     }
     public static function getState($user,$problemid){
-        $status = StatusProblem::where('problem_id', '=', $problemid)->where('user_id', $user->id)->first();
-        
+        $status = StatusProblem::where('problem_id', $problemid)->where('user_id', Auth::user()->id)->first();
         $data = [];
         if($status){
             if($status->status == 'afk'){
                 $data['status'] = 'error_outline';
                 $data['color'] = 'orange';
+            }
+            if($status->status == 'online'){
+                $data['status'] = 'check_circle';
+                $data['color'] = 'green';
             }
         }else{
             $data['status'] = 'check_circle';
@@ -48,6 +56,74 @@ class TeacherController extends Controller {
         }
         return $data;
         
+    }
+    public function postTeamwork(){
+        //Almacenamos datos del FrontEnd
+        $teamworks = Input::get('teamworks');
+        $idProblem = Input::get('problem_id');
+        //Recorremos la data a actualizar.
+        
+        foreach($teamworks as $data) {
+            $team = Teamwork::where('id', $data['id'])->first();
+            //No existe el team y creara uno nuevo.
+            if($team == null){
+                $team = new Teamwork;
+                $team->name = $data['nameTeam'];
+                $team->save();
+            }
+            
+            //Actualizamos el registro de Teamwork con los usuarios
+            foreach($data['students'] as $student){
+
+                $inscriptionTeam = TeamworkInscription::where('problems_id', $idProblem)->where('student_id', $student['id'])->first();
+                $beforeTeam = $inscriptionTeam->teamwork_id;
+                $inscriptionTeam->teamwork_id = $team->id;
+                $inscriptionTeam->save();
+                //Si el usuario es lider de una actividad este sera destituido.
+                $lider = TeamworkActivity::where('user_lider_id', $student['id'])->where('teamwork_id', $beforeTeam)->first();
+                if($lider != null){
+                   TeamworkActivity::destroy($lider->id);
+                }   
+            } 
+        }
+        //retornamos la data ya actualizada al FrontEnd
+        $updatedTeam = $this->getExerciseTeamwork($idProblem);
+        $arrayTeam = json_decode($updatedTeam['teamworks']);
+        foreach($arrayTeam as $team){
+            $statusTeam = StatusTeam::where('id_team', $team->id)->where('id_problem', $idProblem)->first();
+            if($statusTeam){
+                if($statusTeam->status == 'afkTeam' && count($team->students) >= 2){
+                    $team->status = null;
+                    StatusTeam::destroy($statusTeam->id);
+                }
+            }
+            if(count($team->students) == 1){
+                if(!$statusTeam){
+                    $statusTeam = new StatusTeam;
+                    $statusTeam->id_team = $team->id;
+                    $statusTeam->id_problem = $idProblem;
+                }
+                $statusTeam->status = 'afkTeam';
+                $statusTeam->save();
+                
+                $team->status = 'afk';
+            }
+            /*foreach($team->students as $student){
+                $status = StatusProblem::where('user_id', $student->id)->where('problem_id', $idProblem)->first();
+                if($status){
+                    if($status->status == 'afk'){
+                        $student->status = 'error_outline';
+                        $student->color = 'orange';
+                    }
+                    if($status->status == 'on'){
+                        $student->status = 'check_circle';
+                        $student->color = 'green';
+                    }
+                }
+            }*/
+        }
+        broadcast(new TeamworkUpdate($idProblem, $arrayTeam))->toOthers();
+        return json_encode($arrayTeam);
     }
     public function getStates($problemid){
         
@@ -72,11 +148,33 @@ class TeacherController extends Controller {
         }
     
         $infoTeamwork = $this->getExerciseTeamwork($problemid);
-        $info = json_decode($infoTeamwork['teamworks']);
+        $arrayTeam = json_decode($infoTeamwork['teamworks']);
+        foreach($arrayTeam as $team){
+            $statusTeam = StatusTeam::where('id_team', $team->id)->where('id_problem', $problemid)->first();
+            if($statusTeam){
+                if($statusTeam->status == 'afkTeam' && count($team->students) >= 2){
+                    $team->status = null;
+                    StatusTeam::destroy($statusTeam->id);
+                }
+            }
+            if(count($team->students) == 1){
+                if(!$statusTeam){
+                    $statusTeam = new StatusTeam;
+                    $statusTeam->id_team = $team->id;
+                    $statusTeam->id_problem = $problemid;
+                }
+                $statusTeam->status = 'afkTeam';
+                $statusTeam->save();
+                
+                $team->status = 'afk';
+            }
+        }
+        $info = json_encode($arrayTeam);
         
         $problemData = json_encode(MakerController::getProblem($problemid));
         
-        return view('/maker/view-state', ['idProblem' => $problemid,'status' => $status,'problem' => $problemData, 'infoTeamwork' => $info, 'usersCourse' => $usersCourse]);
+
+        return view('/maker/view-state', ['type' => $problem->type_problem,'idProblem' => $problemid,'status' => $status,'problem' => $problemData, 'infoTeamwork' => $info, 'usersCourse' => $usersCourse]);
     }
     public function getExerciseTeamworkScore($exerciseId = 1) {
         $problem = Problem::find($exerciseId);
@@ -115,13 +213,13 @@ class TeacherController extends Controller {
         return $data;
     }
 
-    public function getExerciseTeamwork($exerciseId = 1) { 
+    public static function getExerciseTeamwork($exerciseId = 1) { 
         $problem = Problem::find($exerciseId);
         $nameProblem = $problem->name;
         $nTeamwork = $problem->teamworks;
         $problemId = $problem->id;
         $type = 'teacher';
-        $teamworkInscriptions = TeamworkInscription::where('problems_id', '=', $problemId)->pluck('teamwork_id');
+        $teamworkInscriptions = TeamworkInscription::where('problems_id', '=', $problemId)->get()->sortBy('teamwork_id')->pluck('teamwork_id');
         $teamworkS = Teamwork::whereIn('id', $teamworkInscriptions)->get()->load('teamworks');
         $teamworkid = [];
     
@@ -140,6 +238,7 @@ class TeacherController extends Controller {
             $teamworks = [];
             $teamworks['id'] = $idTeam;
             $teamworks['nameTeam'] = $tname->name;
+            $teamworks['status'] = null;
             $teamworks['students'] = [];
             $userTeamwork = TeamworkInscription::where('teamwork_id', '=', $idTeam)->pluck('student_id');
             foreach($userTeamwork as $user) {
@@ -394,5 +493,5 @@ class TeacherController extends Controller {
         return $data;
     }
 
-   
+    
 }

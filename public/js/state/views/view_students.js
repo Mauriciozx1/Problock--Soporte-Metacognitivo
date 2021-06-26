@@ -5,7 +5,9 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
         'change input.cb-rule[type=checkbox]' : 'changeRule',
         'click #btn-add-result-value' : 'addExpectedResult',
         'click .btn-remove-result-value' : 'removeExpectedResult',
-        'click .select-chat' : 'selectStudent'
+        'click .select-chat' : 'selectStudent',
+        'click .options-grups' : 'viewModalReGrup',
+        
     },
 
     currentActivity : undefined,
@@ -23,11 +25,17 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
     isView : false,
 
     chats : undefined,
+    
+    viewOn : false,
+
+    notificationView : 0,
+    
 
     initialize : function() {
         this.teamWorks = window.infoTeamwork;
         this.students = window.students;
         //console.log(window.statusView.currentActivity);
+        
     },
 
     //Cambia la actividad con la cual se está trabajando
@@ -36,6 +44,8 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
         window.objectivesSection.setActivity(activity);
         if(!this.isView){
             this.render();
+            console.log(this.students);
+            console.log(this.teamWorks);
             this.isView = true;
         }
         
@@ -45,11 +55,52 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
         this.renderInfo();
         console.log(window.infoTeamwork);
     },
+
+    viewModalReGrup : function(){
+        window.regrups.show();
+    },
+
+    setStatusTeam : function(teamworks){
+        this.teamWorks = teamworks;
+        window.teamwork.set('teamworks', teamworks); 
+        //existe modelo, Se modifica interfaz
+        if(this.currentActivity != null){
+            this.renderTeam();
+        }
+        if(this.$('.modal-regrup').is(':visible')){
+            window.regrups.setTeams(teamworks);
+        }
+        
+             
+        
+    },
+
+    newNotification : function(data){
+        if(this.viewOn == false){
+            this.notificationView++;
+            $('#badge-list').html(''+this.notificationView+'').show(400);
+        }
+        console.log(data);
+        var notification = $('#badge-'+data.data.user.id).text();
+        if(window.chatView.studentChat != data.student || !$('.chat-popup').is(':visible')){
+            if(data.idTeam != null){
+                var notificationTeam = $('#badge-'+data.idTeam).text();
+                notificationTeam++;
+                $('#badge-'+data.idTeam).html(''+notificationTeam+'').show(400);
+            }else{
+                notification++;
+                $('#badge-'+data.data.user.id).html(''+notification+'').show(400);
+            }
+            
+        }
+        console.log(notification);
+    },
     selectStudent : function(event){
         var tab = $(event.currentTarget);
         console.log(tab);
         var id = tab.attr('id').split('-');
-        $('#title-chat').html('<strong>Mensajes con:</strong><p>'+tab.attr('name')+'</p>');
+        $('#badge-'+id[1]).html('0').hide(400);
+        $('#title-chat').html('<strong>Mensajes con el Estudiante </strong><span id="btn-capture" class="btn-capture" title="Tomar Captura">📷️</span><p>'+tab.attr('name')+'</p>');
         window.chatView.setChat(tab.attr('name'), id[1]);
         console.log(window.chatView.chats);
     },
@@ -80,6 +131,7 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
             if(this.currentActivity.get('problem_type') == 'Grupal'){
                 this.renderTeam();
             }else{
+                $('#list-activity').css('display', 'block');
                 this.students.forEach(element => {
                     $('<div>',{
                         id: element.id,
@@ -101,6 +153,13 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
                             style : 'color:'+element.color+'; margin:0.5rem;',
                             text : element.status,
                         })
+                    ).append(
+                        $('<div>', {
+                            id : 'badge-'+element.id,
+                            class : 'badge-view',
+                            text : '0',
+                            style : 'display:none'
+                        })
                     ).hide().appendTo('#list-activity').fadeIn('slow');
                 });
                 //Renderizar lista de estudiantes
@@ -110,16 +169,23 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
         
     },
     renderTeam : function(){
+        this.$('#list-activity').html("");
         var newTag = null;
         var team = null;
         this.$('.title-list-activities').html("<strong>Lista de Estudiantes</strong><p>Presiona en el nombre del estudiante para poder abrir una comuncación con el.</p><p>Tambien puedes presionar en el nombre del equipo para comunicarte con todos los integrantes del Grupo.</p>");
         this.teamWorks.forEach(element => {
+            var style = null;
+            if(element.status == 'afk'){
+                style = 'border:2px solid #f00;';
+            }else{
+                style = 'border:2px solid #650164';
+            }
             team = element.id;
             newTag = this.$('#list-activity').hide().fadeIn('slow').append(
                 $('<div>',{
                     id: element.id,
                     class : 'list-student-status',
-                    style : 'text-align:center; margin:1rem;',
+                    style : 'text-align:center;'+style,
                     
                 }).append(
                     $('<span>',{
@@ -128,6 +194,13 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
                         class : 'name-team select-chat',
                         name : element.nameTeam
                         
+                    })
+                ).append(
+                    $('<div>', {
+                        id : 'badge-'+element.id,
+                        class : 'badge-view',
+                        text : '0',
+                        style : 'display:none'
                     })
                 ));
             var students = element.students;
@@ -149,6 +222,13 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
                         style : 'color:'+element.color+'; margin:0.5rem;',
                         text : element.status,
                     })
+                ).append(
+                    $('<div>', {
+                        id : 'badge-'+element.id,
+                        class : 'badge-view',
+                        text: '0',
+                        style : 'display:none'
+                    })
                 ).hide().fadeIn('slow').appendTo('#'+team);
             });
         });
@@ -167,32 +247,30 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
     },
 
     setStatus : function(user, type){
-        if(this.currentActivity){
-
+        if(this.currentActivity != null){
             this.$('#icons-'+user.id).css('color', type.color);
             this.$('#icons-'+user.id).text(type.status);
-                
-            if(this.currentActivity.get('problem_type') == 'Grupal'){
-                this.teamWorks.forEach(element => {
-                
-                    element.students.forEach(element => {
-                        if(user.id == element.id){
-                            element.status = type.status;
-                            element.color =  type.color;
-                        }
-                    });
-                });
-                
-            }else{
-                this.students.forEach(element => {
+        }
+        console.log(this.teamWorks.length);
+        if(this.teamWorks.length > 0){  
+            this.teamWorks.forEach(element => {
+                element.students.forEach(element => {
                     if(user.id == element.id){
                         element.status = type.status;
                         element.color =  type.color;
                     }
                 });
-            }
+            });    
         }
-        
+        if(this.teamWorks.length == 0){
+            this.students.forEach(element => {
+                if(user.id == element.id){
+                    element.status = type.status;
+                    element.color =  type.color;
+                }
+                
+            });
+        }
     },
 
     updateStatus : function(data){

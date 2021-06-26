@@ -159,6 +159,7 @@ Route::get('teacher/view/{id}', 'TeacherController@getStates');
 Route::get('teacher/scores/{id}', 'TeacherController@getScores');
 Route::get('teacher/steamwork/{id}', 'TeacherController@getSTeamwork');
 Route::get('teacher/teamwork/{id}', 'TeacherController@getTeamwork');
+Route::post('teacher/teamwork', 'TeacherController@postTeamwork');
 
 // Teamwork
 

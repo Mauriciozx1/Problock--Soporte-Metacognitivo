@@ -24,7 +24,7 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
 
     initialize : function() {
         this.user = window.studentUser;
-        this.$el = $('.chat-popup');
+        this.$el = $('#chat-popup');
         $('badge').fadeOut();
         this.$('.chat-user-active').hide();
         this.$('.text-on').html('<div class="content-button-on"><strong >Ver usuarios online</strong><span class="material-icons">expand_more</span></div>');
@@ -35,13 +35,14 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
         this.setConection();
         var contandoEmoti = 0;
         document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
-            var mChat = document.querySelector('#chat-message'); 
-            console.log(mChat);
-            document.querySelector('#chat-message').value += event.detail.unicode;
-            contandoEmoti++;
-            console.log(contandoEmoti+''+event.detail.unicode);
-            console.log(event);
-            
+            if(this.$el.is(':visible')){
+                var mChat = document.querySelector('#chat-message'); 
+                console.log(mChat);
+                document.querySelector('#chat-message').value += event.detail.unicode;
+                contandoEmoti++;
+                console.log(contandoEmoti+''+event.detail.unicode);
+                console.log(event);
+            }    
         });
         
         this.$('#chat-message').click(function(){
@@ -117,7 +118,7 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
             }
             this.pivote++;
             window.WB.newNotification('chat');
-            $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 2500);
+            $('#list-unstyled').animate({ scrollTop: $('#p-2').maxheight() }, 2500);
             
         })
         .listenForWhisper('writing', e =>{
@@ -209,7 +210,7 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
             }
             this.chat.push(message);
             this.pivote++;
-            $('#list-unstyled').animate({ scrollTop: $('.p-2').height() }, 2500);
+            $('#list-unstyled').animate({ scrollTop: $('#p-2').height() }, 2500);
             document.getElementById('chat-message').value = "";
             this.rMessage = undefined;
             this.$(".r-message-content").hide('slow');
@@ -222,6 +223,11 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
     show : function() {
         if($('.emoji-popup').is(":visible")){
             $('.emoji-popup').toggle();
+        }
+        if($('#chat-popup-help').is(":visible")){
+            $('#chat-popup-help').hide(500);
+            $('.btn-chat-group').hide(500);
+            $('.btn-chat-person').hide(500);
         }
         this.$el.toggle(500);
         this.$('badge').toggle(200);

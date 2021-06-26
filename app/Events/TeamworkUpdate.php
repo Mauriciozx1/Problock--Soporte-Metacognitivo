@@ -9,26 +9,23 @@ use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Auth;
 
-class StatusSent implements ShouldBroadcast
+class TeamworkUpdate implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $teamworks;
     public $problemid;
-    public $data;
-    public $user;
-    
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($problemid, $data)
+    public function __construct($problemid,$teamworks)
     {
+        $this->teamworks = $teamworks;
         $this->problemid = $problemid;
-        $this->data = $data;
-        $this->user = Auth::user();
+        
         //
     }
 
@@ -38,17 +35,12 @@ class StatusSent implements ShouldBroadcast
      * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
-    {   
+    {
         return new PresenceChannel('status.'.$this->problemid);
-    
     }
 
     public function broadcastAs()
     {
-        if($this->data == null){
-            return ('change-afk');
-        }else{
-            return ('afk');
-        }  
+        return ('updateTeam');
     }
 }

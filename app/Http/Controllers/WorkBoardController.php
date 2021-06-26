@@ -5,6 +5,7 @@ namespace CSLP\Http\Controllers;
 use Auth;
 use CSLP\Events\ScreenSent;
 use CSLP\Events\StatusSent;
+use CSLP\Events\StatusTeamSent;
 use CSLP\Events\TeamworkSent;
 use CSLP\Events\ActivitySent;
 use Carbon\Carbon;
@@ -23,6 +24,7 @@ use CSLP\LinkTeamworkInscription;
 use CSLP\TeamworkActivity;
 use CSLP\AnswerQuestion;
 use CSLP\StatusProblem;
+use CSLP\StatusTeam;
 use Input;
 
 class WorkBoardController extends Controller {
@@ -31,14 +33,185 @@ class WorkBoardController extends Controller {
         return redirect('/problems');
     }
     public function postState() {
+        //obtener id del problema
         $groupLink = GroupActivityLink::where('activity_id', Input::get('activity_id'))->first();
         $groupActivity = ActivitiesGroup::where('id', $groupLink->group_id)->first();
-        $modelStatus = new StatusProblem;
-        $modelStatus->status = 'afk';
-        $modelStatus->user_id = Auth::user()->id;
-        $modelStatus->problem_id = $groupActivity->problem_id;
-        $modelStatus->save();
-        broadcast(new StatusSent($groupActivity->problem_id, $modelStatus))->toOthers();
+
+        //si es un estado de usuario
+        if(Input::get('status') == 'online' || Input::get('status') == 'afk'){
+
+            //Se busca un estado
+            $modelStatus = StatusProblem::where('user_id', Auth::user()->id)->where('problem_id', $groupActivity->problem_id)->first();
+
+            //no existe se crea uno, sino se edita el "status" del modelo.
+            if(!$modelStatus){
+                $modelStatus = new StatusProblem;
+                $modelStatus->user_id = Auth::user()->id;
+                $modelStatus->problem_id = $groupActivity->problem_id;
+            }
+            $modelStatus->status = Input::get('status');
+            $modelStatus->save();
+
+            //Envio de evento al profesor
+            broadcast(new StatusSent($groupActivity->problem_id, $modelStatus))->toOthers();
+        }
+        //si es un estado de Grupo
+        if(Input::get('status') == 'afkTeam'){
+
+            //Obtenemos detalles de los grupo: IDs de Grupos, Estado, Integrantes.
+            
+            $statusTeam = StatusTeam::where('id_team', Input::get('teamwork_id'))->where('id_problem', $groupActivity->problem_id)->first();
+            
+            $studentsTeamwork = TeamworkInscription::where('teamwork_id',Input::get('teamwork_id'))->pluck('student_id');
+            
+            $countOnline = 0;
+            $today = Carbon::today();
+            foreach($studentsTeamwork as $studentID){
+                $status = StatusProblem::where('user_id', $studentID)->where('problem_id', $groupActivity->problem_id)->whereDate('updated_at', '<=', $today)->first();
+                $statusData = StatusProblem::where('user_id', $studentID)->where('problem_id', $groupActivity->problem_id)->first();
+                dd($today);
+                if($status){
+                    //Comprobamos la fecha de la crecion del estado
+                    $countOnline++;
+                }else{
+                    if($statusData){
+                        StatusProblem::destroy($statusData->id);
+                    }
+                }
+            }
+            //Establecemos estado AFK al grupo con ausencia de integrantes.
+            if($statusTeam == null){
+                if($countOnline == 1){
+                    $statusTeam = new StatusTeam;
+                    $statusTeam->id_team = Input::get('teamwork_id');
+                    $statusTeam->id_problem = $groupActivity->problem_id;
+                    $statusTeam->status = 'afkTeam';
+                    $statusTeam->save();
+                }
+            }
+            
+
+            //recorremos lista de integrantes por grupo.
+            foreach($studentsTeamwork as $sID){
+                //estado de cada estudiante
+                $status = StatusProblem::where('user_id', $sID)->where('problem_id', $groupActivity->problem_id)->first();
+                $idTeams = [];
+                $teams = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->pluck('teamwork_id');
+                foreach($teams as $t){
+                    if($idTeams == null){
+                        array_push($idTeams, $t);
+                    }else{
+                        if($idTeams[count($idTeams)-1] != $t){
+                            array_push($idTeams, $t);
+                        }
+                    }
+                }
+                
+                $countTeam = count($idTeams);
+                //no existe un estado, se revisa la inscripcion. 
+                if($status == null){
+                    $inscription = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->where('student_id', $sID)->first();
+                    $pivote = false;
+                    $pivoteN = 0;
+
+                    //se recorre las lista de grupos
+                    foreach($idTeams as $teamID){
+                        $statusTeamID = StatusTeam::where('id_team', $teamID)->where('id_problem', $groupActivity->problem_id)->first();
+
+                        //Existe grupo recien creado por usuarios AFK, se obtienen sus integrantes
+                        if($statusTeamID){
+                            if($statusTeamID->status == 'new'){
+                                $studentNewTeam = TeamworkInscription::where('teamwork_id',$teamID)->pluck('student_id');
+    
+                                // el grupo tiene menos de 3 integrantes, se integra.
+                                if(count($studentNewTeam) < 3 ){
+                                    $pivote = true;
+                                    $inscription->teamwork_id = $teamID;
+                                    $inscription->save();
+                                }
+                                //el grupo esta lleno,
+                                if(count($studentNewTeam) == 3 ){
+                                    $pivote = false;
+                                    // se elimina estado 
+                                    StatusTeam::destroy($statusTeamID->id);
+                                }
+                            }
+                        }
+                        
+                        $pivoteN++;
+                        //No existe grupo con estado "new", se crea grupo
+                        if($countTeam == $pivoteN && $pivote == false){
+                            $teamwork = new Teamwork;
+                            $teamwork->name = 'Nuevo equipo: ' . ($countTeam+1);
+                            $teamwork->save();
+    
+                            //Actualizamos la inscripcion
+                            $inscription->teamwork_id = $teamwork->id;
+                            $inscription->save();
+    
+                            //Generamos su estado "new"
+                            $statusTeam = new StatusTeam;
+                            $statusTeam->id_team = $teamwork->id;
+                            $statusTeam->id_problem = $groupActivity->problem_id;
+                            $statusTeam->status = 'new';
+                            $statusTeam->save();
+                        }
+                        
+                    }
+                     
+                     
+                    
+                }
+                
+                
+            }
+            $infoTeamwork = TeacherController::getExerciseTeamwork($groupActivity->problem_id);
+            $arrayTeam = json_decode($infoTeamwork['teamworks']);
+            foreach($arrayTeam as $team){
+                $status = StatusTeam::where('id_team', $team->id)->where('id_problem', $groupActivity->problem_id)->first();
+                if($status){
+                    if($status->status == 'afkTeam'){
+                        $team->status = 'afk';
+                    }
+                }
+            }
+            $teamworks = $arrayTeam;
+            //se envia evento al profesor de estado
+            broadcast(new StatusTeamSent($groupActivity->problem_id, Input::get('teamwork_id'), $statusTeam ,json_encode($teamworks)))->toOthers();
+        }
+        if(Input::get('status') == 'onlineTeam'){
+
+            //si existe estado, se elimina.
+            $status = StatusTeam::where('team_id', Input::get('teamwork_id'))->where('problem_id', $groupActivity->problem_id)->first();
+            if($status){
+                StatusTeam::destroy($status->id);
+            }
+            //se envia evento al profesor de estado
+            $infoTeamwork = TeacherController::getExerciseTeamwork($groupActivity->problem_id);
+            $arrayTeam = json_decode($infoTeamwork['teamworks']);
+            foreach($arrayTeam as $team){
+                $statusTeam = StatusTeam::where('id_team', $team->id)->where('id_problem', $groupActivity->problem_id)->first();
+                if($statusTeam){
+                    if($statusTeam->status == 'afkTeam' && count($team->students) >= 2){
+                        $team->status = null;
+                        StatusTeam::destroy($statusTeam->id);
+                    }
+                }
+                if(count($team->students) == 1){
+                    if(!$statusTeam){
+                        $statusTeam = new StatusTeam;
+                        $statusTeam->id_team = $team->id;
+                        $statusTeam->id_problem = $problemid;
+                    }
+                    $statusTeam->status = 'afkTeam';
+                    $statusTeam->save();
+                    
+                    $team->status = 'afk';
+                }
+            }
+            $teamworks = $arrayTeam;
+            broadcast(new StatusTeamSent($groupActivity->problem_id, Input::get('teamwork_id'), null , $teamWorks))->toOthers();
+        }
                 
     }
     public function getView($problemId) {
@@ -87,50 +260,68 @@ class WorkBoardController extends Controller {
                 $scoresArray['typeAct'] = $activity->type;
             }    
         }  
-        //Si es primera vez que entra, y el estudiante  fue agregado al curso se registra su estado.
-        $statusUser = StatusProblem::where('user_id', '=', Auth::user()->id)->where('problem_id', '=', $problemId)->first();
+        //Si es primera vez que entra, y el estudiante  fue agregado al curso se verifica su estado.
+        $statusUser = StatusProblem::where('user_id', Auth::user()->id)->where('problem_id', '=', $problemId)->first();
         $status = null;
         if($statusUser != null){
             if($statusUser->status == 'afk'){
                 $status = 'error_outline';
-                
+            }
+            if($statusUser->status == 'online'){
+                $status = 'check_circle';
             }
         }
+        if($statusUser == null){
+            $statusUser = new StatusProblem;
+            $statusUser->status = 'online';
+            $statusUser->user_id = Auth::user()->id;
+            $statusUser->problem_id = $problemId;
+            $statusUser->save();
+            $status = 'check_circle';
+        }
+
         //Obteniendo los scores obtenidos en las actividades
         if($problem->type_problem == 'Grupal'){
-            $teamworkInscription = TeamworkInscription::where('problems_id', $problemId)->where('student_id', \Auth::user()->id)->get();
-            
-            foreach($teamworkInscription as $teamI){
-                $studentsTeamwork = TeamworkInscription::where('teamwork_id',$teamI->teamwork_id)->pluck('student_id');
-                $teamActivity = TeamworkActivity::where('teamwork_id', '=', $teamI->teamwork_id)->first();
-                $teamworks = Teamwork::where('id', '=', $teamI->teamwork_id)->first();
-                if($teamActivity == null){
-                    $userLider = null;
-                    $userLiderId = null;
-                }else{
-                    $userLider = $teamActivity->user_lider_id;
-                    $userLider = User::where('id', '=', $teamActivity->user_lider_id)->first();
-                    $userLiderId = $userLider;
+            $teamworkInscription = TeamworkInscription::where('problems_id', $problemId)->where('student_id', \Auth::user()->id)->first();
+            $statusTeam = StatusTeam::where('id_problem', $problemId)->where('id_team',$teamworkInscription->teamwork_id)->first();
+            if($statusTeam){
+                if($statusTeam->status == 'afk'){
+                    $statusT = 'afk';
                 }
-                $teamwork = [];
-                $teamwork['id'] = $teamworks->id;
-                $teamwork['Tname'] = $teamworks->name;
-                $teamwork['userLider'] = $userLiderId;
-                $teamwork['countUser'] = count($studentsTeamwork);
-                $teamwork['students'] = [];
-                foreach ($studentsTeamwork as $id){
-                    $student = User::find($id);
-                    $students = [];
-                    $students['id'] = $id;
-                    $students['name'] = $student->name;
-                    $students['flastname'] = $student->flastname;
-                    array_push($teamwork['students'], $students);
-                }
+            }  
+            //foreach($teamworkInscription as $teamI){
+            $studentsTeamwork = TeamworkInscription::where('teamwork_id',$teamworkInscription->teamwork_id)->pluck('student_id');
+            $countStudents = count($studentsTeamwork);
+            $teamActivity = TeamworkActivity::where('teamwork_id', '=', $teamworkInscription->teamwork_id)->first();
+            $teamworks = Teamwork::where('id', '=', $teamworkInscription->teamwork_id)->first();
+            if($teamActivity == null){
+                $userLider = null;
+                $userLiderId = null;
+            }else{
+                $userLider = $teamActivity->user_lider_id;
+                $userLider = User::where('id', '=', $teamActivity->user_lider_id)->first();
+                $userLiderId = $userLider;
             }
+            $teamwork = [];
+            $teamwork['id'] = $teamworks->id;
+            $teamwork['Tname'] = $teamworks->name;
+            $teamwork['userLider'] = $userLiderId;
+            $teamwork['countUser'] = $countStudents;
+            $teamwork['students'] = [];
+            foreach ($studentsTeamwork as $id){
+                $student = User::find($id);
+                $students = [];
+                $students['id'] = $id;
+                $students['name'] = $student->name;
+                $students['flastname'] = $student->flastname;
+                array_push($teamwork['students'], $students);
+            }
+            //}
          
-            return view('/workboard/view', ['myStatus' => $status, 'activityId' => $activitiId, 'userLider' => $userLider ,'userscount' => $teamwork['countUser'],'teamworkid' => $teamwork['id'],'studentUser' => Auth::user() ,'userId' => Auth::user()->id, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId,'teamwork' =>json_encode($teamwork)]);
+            return view('/workboard/view', ['statusT' => $statusTeam,'myStatus' => $status, 'activityId' => $activitiId, 'userLider' => $userLider ,'userscount' => $teamwork['countUser'],'teamworkid' => $teamwork['id'],'studentUser' => Auth::user() ,'userId' => Auth::user()->id, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId,'teamwork' =>json_encode($teamwork)]);
         }else{
-            return view('/workboard/view', ['myStatus' => $status, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId]);}
+            return view('/workboard/view', ['myStatus' => $status, 'problem' => json_encode($problemStructure), 'scores' => json_encode($scoresArray), 'type'=>$problem->type_problem, 'problemid' =>$problemId]);
+        }
         
         
     }
@@ -140,8 +331,39 @@ class WorkBoardController extends Controller {
         //Obtener recursos
         //Obtener respuesta actual
         $lider = null;
-        $activity = Activity::where('id','=',$activityID)->first();;
+        $activity = Activity::where('id','=',$activityID)->first();
+        $activityGroup = GroupActivityLink::where('activity_id', $activityID)->first();
+        $group = ActivitiesGroup::where('id', $activityGroup->group_id)->first();
+        $inscription = TeamworkInscription::where('problems_id', $group->problem_id)->where('student_id', Auth::user()->id)->first();
+        $teamworkid = null;
+        $statusUser = StatusProblem::where('problem_id', $group->problem_id)->where('user_id', Auth::user()->id)->first();
+        $status = null;
+        $statusT = null;
+        if($statusUser != null){
+            if($statusUser->status == 'afk'){
+                $status = 'error_outline';
+            }
+        }
+        if($statusUser == null){
+            $statusUser = new StatusProblem;
+            $statusUser->status = 'online';
+            $statusUser->user_id = Auth::user()->id;
+            $statusUser->problem_id = $group->problem_id;
+            $statusUser->save();
+            $status = 'check_circle';
+        }
+        if($inscription != null){
+            $teamworkid = $inscription->teamwork_id;
+            $statusTeam = StatusTeam::where('id_team', $inscription->teamwork_id)->where('id_problem', $group->problem_id)->first();
+            if($statusTeam){
+                if($statusTeam->status == 'afkTeam'){
+                    $statusT = 'afk';
+                }
+            } 
+        }
+        
         if($activity->type == 'Grupal'){
+            
             $activityLider = TeamworkActivity::where('activity_id', '=', $activityID)->first();
             if($activityLider != null){
                 $lider = $activityLider->user_lider_id;
@@ -165,7 +387,7 @@ class WorkBoardController extends Controller {
                 return ['score' => 0,'resource' => '', 'answer' => $answer->value, 'lider' => $lider];
             }*/
         }
-        return ['score' => $valueScore,'resource' => '', 'answer' => $valueAnswer, 'lider' => $lider, 'qualitative' => $permQualitative, 'quantitative' => $permQuantitative];
+        return ['statusT' => $statusT,'status'=> $status,'idTeamwork' => $teamworkid, 'score' => $valueScore,'resource' => '', 'answer' => $valueAnswer, 'lider' => $lider, 'qualitative' => $permQualitative, 'quantitative' => $permQuantitative];
     }
     public function postLider(){
         $activitiID = Input::get('activityid');

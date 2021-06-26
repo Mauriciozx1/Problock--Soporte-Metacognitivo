@@ -1,6 +1,7 @@
 $(document).ready(function() {
     window.interpreter = new CSLP.Workboard.Models.JSInterpreter();
     window.codeTester = new CSLP.Workboard.Models.CodeTester();
+    window.teamwork = new CSLP.State.Models.Teamworks();
     //Inicializacion de las Colecciones
     window.collections.activityGroups = new CSLP.State.Collections.ActivityGroups();
     
@@ -25,6 +26,7 @@ $(document).ready(function() {
     window.activityPanel = new CSLP.State.Views.ActivityPanel({
         el : $('#activity-panel')
     });
+   
     window.statusView = new CSLP.State.Views.Status({
         el : $('#maker-container')
     });
@@ -33,8 +35,10 @@ $(document).ready(function() {
     $( "#btn-chat-popup" ).click(function() {
         window.chatView.show();
     });
-    
-    
+    window.regrups = new CSLP.State.Views.ReGrups({
+        el : $('#modal-regrup')
+    });
+   //$('.modal').show();
     
 
 });

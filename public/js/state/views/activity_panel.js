@@ -37,6 +37,14 @@ CSLP.State.Views.ActivityPanel = Backbone.View.extend({
 
             $('.section.active').removeClass('active');
             $(section).addClass('active');
+            if(tab.attr('data-target') == '#view-students-section') {
+                window.viewStudentsSection.viewOn = true;
+                $('#badge-list').html('').hide();
+                window.viewStudentsSection.notificationView = 0;
+                console.log()
+            }else{
+                window.viewStudentsSection.viewOn = false;
+            }
             if(tab.attr('data-target') == '#objectives-section') {
                 $('.blocklyToolboxDiv').show();
             }else{

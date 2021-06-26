@@ -53,8 +53,15 @@ CSLP.Workboard.Views.ActivityRow = Backbone.View.extend({
     selectActivity : function() {
         //Si la actividad no esta bloqueada
         if(!this.model.get('locked')) {
+
+            if(window.tempo.get('id') != 0){
+                clearInterval(window.tempo.get('id'));
+                window.tempo.reset();
+            }
+            if(window.tempo.get('id_afk') != 0){
+                clearTimeout(window.tempo.get('id_afk'));
+            }
             window.WB.changeActivity(this.model);
-            
         } else {
             //Detiene la propagacion del evento para que no se esconda el menu
             return false;

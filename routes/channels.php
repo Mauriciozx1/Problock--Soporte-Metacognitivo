@@ -12,6 +12,7 @@
 |
 */
 use CSLP\Http\Controllers\TeacherController;
+//use CSLP\TeamworkInscription;
 
 Broadcast::channel('CSLP.User.{id}', function ($user, $id) {
 	return (int) $user->id === (int) $id;
@@ -21,6 +22,7 @@ Broadcast::channel('chat-team.{teamworkid}', function ($user) {
 });
 Broadcast::channel('status.{problemid}', function ($user, $problemid) {	
 	$data['user'] = $user;
+	//$data['teamwork'] = TeamworkInscription::where('student_id', $user->id)->where('problems_id', $problemid)->first();
 	$data['data'] = TeacherController::getState($user,$problemid);
 	return $data;
 });
