@@ -166,7 +166,7 @@
                                 @for($i = 1; $i < 4 && $i <= count($sortedStudents); $i++)
                                     <tr>
                                         <td>{!! $sortedStudents[count($sortedStudents) - $i]['fullName'] !!}</td>
-                                        <td>{!! $sortedStudents[count($sortedStudents) - $i]['exerciseScore'] !!}</td>
+                                        <td>{!! $sortedStudents[count($sortedStudents) - $i]['scoreTotal'] !!}</td>
                                     </tr>
                                 @endfor
                             </tbody>
@@ -188,7 +188,7 @@
                                 @for($i = 0; $i < 3 && $i < count($sortedStudents); $i++)
                                     <tr>
                                         <td>{!! $sortedStudents[$i]['fullName'] !!}</td>
-                                        <td>{!! $sortedStudents[$i]['exerciseScore'] !!}</td>
+                                        <td>{!! $sortedStudents[$i]['scoreTotal'] !!}</td>
                                     </tr>
                                 @endfor
                             </tbody>

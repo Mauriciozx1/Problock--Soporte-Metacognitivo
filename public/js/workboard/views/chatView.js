@@ -92,11 +92,24 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
         .joining(user => {
             this.online.push(user);
             this.eventUpdate();
+
         })
 
         .leaving(user => {
             this.online = this.online.filter(u => u.id != user.id);
             this.eventUpdate();
+            if(window.tempo.get('id') == 0){
+                window.tempo.set('seconds', 0);
+                window.tempo.set('minutes', 10);
+                window.tempo.set('pivotesg', false);
+                window.tempo.set('pivotemn', false);
+                
+                if(window.WB.currentActivity.get('type') == 'Grupal' && $('.wait-group').is(':visible')){
+                    window.WB.onChronometer();
+                    console.log('crono');
+                }
+                
+            }
         })
 
         .listen('.message', (e)=>{
@@ -126,15 +139,23 @@ CSLP.Workboard.Views.ChatView = Backbone.View.extend({
             setTimeout(function (){
                 this.$('.text-muted').html("");
             },2000)
-            
         
-            
-            
         })
         .listenForWhisper('update', data => {
             this.online = data.arrayOnline;
             this.renderOnline();
             
+        })
+        .listenForWhisper('updateTeam', data => {
+            if(window.WB.currentActivity.get('type') != 'Grupal'){
+                this.$('.loading-container-restart').addClass('active');
+                window.voteView.modelVote.set('nusers', data);
+                window.usercount = data;
+                setTimeout(function(){
+                    this.$('.loading-container-restart').removeClass('active');
+                }, 1000);
+                
+            }
         })
 
     },

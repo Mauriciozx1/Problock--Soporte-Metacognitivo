@@ -134,7 +134,9 @@ CSLP.Workboard.Views.FinishModal = Backbone.View.extend({
         }
         this.render();
         if(window.WB.currentActivity.get('type') == 'Grupal'){
+            $('.finish-modal').show();
             window.voteView.imgCapture();
+            $('.finish-modal').hide();
         }else{
             window.questionView.setActivity(window.WB.currentActivity);
         }

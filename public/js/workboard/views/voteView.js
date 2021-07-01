@@ -18,11 +18,18 @@ CSLP.Workboard.Views.VoteView = Backbone.View.extend({
     },
 
     imgCapture : function() {
+        var DOMImg = document.getElementById("modal-content").innerHTML;
+        window.WB.currentActivity.set('imgLider', DOMImg);
+
         html2canvas(document.querySelector("#modal-content")).then(canvas =>{
+            console.log(document.querySelector("#modal-content"));
             var dataimg = canvas.toDataURL();
             $("#view-img-screen-finish").attr('src',dataimg);
+
         })
-        window.WB.currentActivity.set('imgLider', document.getElementById("modal-content").innerHTML);
+
+        
+        
         this.show();
     },
     

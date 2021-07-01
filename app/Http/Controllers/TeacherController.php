@@ -386,7 +386,7 @@ class TeacherController extends Controller {
                     $userTest = Student::where('user_id', $user)->get()->first();
                     array_push($userIdCourse, $userTest->id);
                     array_push($students,$userTest);
-                    $scores = Score::whereIn('activity_id', $activitiesTeam)->whereIn('student_id', $userIdCourse)->get();
+                    $scores = Score::whereIn('activity_id', $activitiesIDsTeam)->whereIn('student_id', $userIdCourse)->get();
                     foreach($students as $st) {
                         $studentScores = [];
                         $student = [];
@@ -394,7 +394,7 @@ class TeacherController extends Controller {
                         $student['scores'] = [];
                         $student['exerciseScore'] = 0;
                         if(count($activitiesTeam) !== 0) {
-                            foreach($activitiesTeam as $act) {
+                            foreach($activitiesIDsTeam as $act) {
                                 $score = $scores->where('student_id', $st->id)->where('activity_id', $act)->first();
                                 $scoreValue = 0;
                                 if($score != null)
@@ -427,9 +427,10 @@ class TeacherController extends Controller {
                 $student['score'] = [];
                 $student['scoreTeam'] = [];
                 $student['exerciseScore'] = 0;
+                $student['exerciseScoreTeam'] = 0;
                 $student['exerciseScorenoTeam']= 0;
-                $student['exerciseScore'] = 0;
                 $student['scoreNoTeam'] = [];
+                $student['scoreTotal'] = 0;
                 if(count($activitiesnoTeam) !== 0) {
                     $scores = Score::whereIn('activity_id', $activitiesIDsnoTeam)->whereIn('student_id', $userIdCourse)->get();
                     foreach($activitiesIDsnoTeam as $act) {
@@ -445,8 +446,9 @@ class TeacherController extends Controller {
                         $student['exerciseScore'] += $scoreValue;
                         $student['exerciseScorenoTeam'] = round($student['exerciseScore'] / count($activitiesnoTeam));
                     }
-                }if(count($activitiesTeam) !== 0){
+                }if(count($activitiesTeam) != 0){
                     $scores = Score::whereIn('activity_id', $activitiesIDsTeam)->whereIn('student_id', $userIdCourse)->get();
+                    $scoreTeam = 0;
                     foreach($activitiesIDsTeam as $act) {
                         $score = $scores->where('student_id', $st->id)->where('activity_id', $act)->first();
                         $scoreValue = 0;
@@ -456,19 +458,22 @@ class TeacherController extends Controller {
                         array_push($student['scoreTeam'], $scoreValue);
                         array_push($student['score'], $scoreValue);
                         $student['exerciseScore'] += $scoreValue;
+                        $scoreTeam+= $scoreValue;
+                        $student['exerciseScoreTeam'] = round($scoreTeam / count($activitiesTeam));
                     }
+
                 }
-                
+                $student['scoreTotal'] = round(($student['exerciseScoreTeam'] + $student['exerciseScorenoTeam']) / 2);
                 array_push($studentsArray, $student);
             }
             
             $sortedStudents = array_values(array_sort($studentsArray, function ($value) {
-                return $value['exerciseScore'];
+                return $value['scoreTotal'];
             }));
             //Promedio Total del Ejercicio
             $exerciseScoreAvg = 0;
             foreach($studentsArray as $student) {
-                $exerciseScoreAvg += $student['exerciseScore'];
+                $exerciseScoreAvg += ($student['exerciseScoreTeam'] + $student['exerciseScorenoTeam']) / 2;
             }
 
             $exerciseScoreAvg = round($exerciseScoreAvg / count($studentsArray));
@@ -479,15 +484,14 @@ class TeacherController extends Controller {
                 $activityAvg = 0;
                 foreach($studentsArray as $student) {
                         $activityAvg += $student['score'][$index];
-                    
-                    
-                    
                 }
                 $activityAvg = round($activityAvg / count($studentsArray));
                 array_push($activitiesScoreAvg, $activityAvg);
             }
+        
             $statistics = ['exerciseScoreAvg' => $exerciseScoreAvg, 'activitiesScoreAvg' => $activitiesScoreAvg];
             $data = ['questionData'=> $questionData,'sortedStudents' => $sortedStudents, 'statistics' => $statistics, 'arrayScore' => json_encode($arrayScoreExercise),'teamworkid'=> json_encode($teamworkid),'teamworks' =>json_encode($teamworkArray),'exercise' => $exerciseName,'activities' => $activitiesNames, 'activitiesTeam' => $activitiesNamesTeam, 'activitiesnoTeam' => $activitiesNamesnoTeam, 'students' => $studentsArray, 'teamworkss'=> $teamworkArray];
+            //dd($data);
         }
         
         return $data;

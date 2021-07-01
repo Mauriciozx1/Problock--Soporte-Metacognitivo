@@ -6,13 +6,16 @@ CSLP.Workboard.Models.Waiting = Backbone.Model.extend({
         status : true,
         students : [],
         nusers : 0,
-        //afks : []
+        //afks : [],
+        userStatus : null,
+        tempoAFK : false,
     },
     initialize : function() {
         this.set('nusers', window.usercount);
         this.set('teamworkid',window.teamworkid);
         this.set('activityid', window.activitiId);
-
+        this.set('userStatus', window.userStatus);
+        console.log(window.problemid);
         
     },
     // Actualizamos los datos del modelo y de la Interfaz
@@ -20,22 +23,27 @@ CSLP.Workboard.Models.Waiting = Backbone.Model.extend({
         
         var self = this;
         this.set('students', students);
-        var temp = this.get('students');
+        var temp = students;
         //
         var statusFinish = window.voteView.modelVote.get('statusFinish');
         console.log(temp);
-        //
-        console.log(temp.length);
-        console.log(statusFinish);
-        if(temp.length < self.get('nusers') && statusFinish == false && self.get('status') == true){
-            $('.content-info-wait').html('<h4>Hay '+ temp.length +' integrante/s en la actividad grupal de '+ this.get('nusers') +' para comenzar.</h4>');
+        console.log(window.usercount);
+        console.log(window.chatView.online);
+        console.log(self.get('status'));
+        if(temp.length < window.usercount && statusFinish == false && self.get('status') == true){         
+            $('.content-info-wait').html('<h4>Hay '+ temp.length +' integrante/s en la actividad grupal de '+ window.usercount +' para comenzar.</h4>');
             $('.wait-group').show();
-            self.set('status',true);
+            //self.set('status',true);
+            
         }
-        
-        if(temp.length == self.get('nusers') && window.statusTeam == null){
+        //
+        if(temp.length == window.usercount && window.statusTeam == null && self.get('status') == false){
             window.WB.currentActivity.postLider();
             var lider = window.WB.currentActivity.get('lider'); 
+            
+            /*if(lider == null){
+                window.WB.currentActivity.postLider();
+            }*/
             if(lider != null){
                 setTimeout(function(){
                     $('.content-info-wait').html('<h4>Generando Líder de Grupo...</h4>');
@@ -47,29 +55,29 @@ CSLP.Workboard.Models.Waiting = Backbone.Model.extend({
             }
 
                 $('.content-info-wait').html('<h4>¡Estan todos listos!, preparando la conexion...</h4>');
-                setTimeout(function(){
-                    if(window.tempo.get('id') != 0){
-                        clearInterval(window.tempo.get('id'));
-                        window.tempo.reset();
-                    }
-                    if(window.userStatus == 'check_circle'){
-                        CSLP.message.warning('AFK');
-                        console.log('AFK');
-                        window.WB.currentActivity.setAFK();
-                        $('#btn-chat-popup-help').prop('disabled', true).hide(400);
-                    }
+                
+                if(window.tempo.get('id') != 0){
+                    clearInterval(window.tempo.get('id'));
+                    window.tempo.reset();
+                }
+                if(window.userStatus == 'check_circle' && self.get('tempoAFK') == false){
+                    console.log('Estatus: Online');
+                    window.WB.currentActivity.setAFK();
+                    $('#btn-chat-popup-help').prop('disabled', true).hide(400);
+                    self.set('tempoAFK', true);
+                }
 
-                    if(window.userStatus == 'error_outline'){
-                        console.log('NOAFK');
-                        $('#btn-chat-popup-help').prop('disabled', false).show(400);
-                    }
+                if(window.userStatus == 'error_outline'){
+                    console.log('Estatus: AFK');
+                    $('#btn-chat-popup-help').prop('disabled', false).show(400);
+                }
 
-                    console.log(window.tempo.get('id'));
-                    
-                    $('.wait-group').hide();
-                    
-                    self.set('status',false)
-                },2000);
+                console.log(window.userStatus);
+                
+                $('.wait-group').hide();
+                
+                //self.set('status',false)
+            
             
         }
         if(window.statusTeam){
@@ -82,6 +90,12 @@ CSLP.Workboard.Models.Waiting = Backbone.Model.extend({
             $('.wait-group').show();
             self.set('status',true);
         }
+        
+    },
+    resetActivity : function(){
+        var seg = 0;
+        var self = this;
+        
         
     },
     });

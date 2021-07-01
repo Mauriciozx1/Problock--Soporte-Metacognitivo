@@ -14,7 +14,6 @@
     <script>
         user = {!!Auth::user()!!}
         userStatus = {!!json_encode($myStatus)!!};
-        console.log(userStatus);
         activityGroups = {!! $problem !!};
         scores = {!! $scores !!};
         var statusTeam = null;
@@ -72,7 +71,7 @@
     {{--FINISH MODAL--}}
     <div id="finish-modal" class="finish-modal">
         <div class="modal-fade"></div>
-        <div class="modal">
+        <div id ="modal-f" class="modal">
             <div class="modal-title">
                 <div class="activity-result-status">
                     <i class="material-icons abs-center">mood</i>
@@ -245,7 +244,7 @@
         <div id="wait-group" class="wait-group">
             
             <div class="content-wait" >
-                <div id="chronometer" class="button-view-menu btn-green"><strong>Tiempo de Espera: 10:00</strong></div>  
+                <div id="chronometer" class="button-view-menu btn-green"><strong>Integrante/s desconectado/s - Tiempo de Espera: '10':'00'</strong></div>  
                 <strong id ="info-wait">Esperando a integrantes del grupo, para comenzar actividad.</strong>
                 <div class="grup-wait">
                     <div class="content-grup">

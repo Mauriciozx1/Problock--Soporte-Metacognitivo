@@ -21,7 +21,8 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
         quantitative : 'false',
         qualitative : 'false',
         questions : null,
-        questions_answer : null
+        questions_answer : null,
+        statusUser : null,
     },
 
     fetched : false,
@@ -31,6 +32,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
     initialize : function() {
         var score = window.scores[this.get('id')];
         var teamwork = window.teamworkid;
+        this.set('statusUser', window.userStatus);
         if(teamwork !== null)
             this.set('teamwork', teamwork);
         if(score !== undefined)
@@ -71,7 +73,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
                 self.set('answer', response.answer || '');
                 self.set('score', response.score || 0);
                 self.set('teamwork', response.idTeamwork || 0);
-                window.userStatus = response.status;
+                self.set('statusUser', response.status);
                 window.teamworkid = response.idTeamwork;
                 console.log(response);
                 window.WB.renderActivityInfo();
@@ -90,37 +92,52 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
     setAFK : function() {
         //Enviar Estado Ausente.
         var self = this;
-        var tempoAfk = setTimeout(function(){
-            //CSLP.message.warning('AFK');
-            console.log('afkUser');
-            $.post(basePath + '/workboard/state', {
-                activity_id : self.get('id'),
-                status : 'afk',  
-            }, function(response) {
-                $('#btn-chat-popup-help').prop('disabled', false).show(400);
-                CSLP.message.success('<span>Se ha habilitado la función "Ayuda". <br>Puedes comunicarte con el Profesor presionando el botón.</span>');
-                window.tempo.set('id_afk', 0);
-            });
-            
-        },300000);
-        window.tempo.set('id_afk', tempoAfk);
-         
+        var time = 0;
+        var tempoAfk = setInterval(function(){
+            time++;
+            console.log(tempoAfk);
+            window.tempo.set('id_afk', tempoAfk);
+            if(time == 300){
+                $.post(basePath + '/workboard/state', {
+                    activity_id : self.get('id'),
+                    status : 'afk',  
+                }, function(response) {
+                    $('#btn-chat-popup-help').prop('disabled', false).show(400);
+                    CSLP.message.success('<span>Se ha habilitado la función "Ayuda". <br>Puedes comunicarte con el Profesor presionando el botón.</span>');
+                    window.tempo.set('id_afk', 0);
+                    self.set('statusUser', 'error_outline');
+                });
+                clearInterval(tempoAfk);
+            }
+        },1000);
+        
+        console.log(window.tempo.get('id_afk'));
     },
     setOfflineAFK : function(){
         //Estado de Usuario Desconectado por mas de 10 minutos.
         var self = this;
+        var online = window.chatView.online;
         //CSLP.message.warning('AFK');
         console.log('afkTeam');
         $.post(basePath + '/workboard/state', {
             activity_id : self.get('id'),
             status : 'afkTeam',
-            teamwork_id : self.get('teamwork')
+            teamwork_id : self.get('teamwork'),
+            online : online,
         }, function(response) {
             CSLP.message.warning('Se ha notificado al profesor la ausencia de integrantes dentro del equipo.');
             //window.WB.modelWait.set('status', false);
             $('.loading-container-restart').addClass('active');
+            if(online.length > 1){
+                Echo.join('chat-team.'+self.get('teamwork'))
+                    .whisper('updateTeam',online.length)
+            }
+            window.voteView.modelVote.set('nusers', online.length);
+            window.usercount = online.length;
+            
             setTimeout(function(){
-                location.reload();
+                window.WB.updateWaiting();
+                $('.loading-container-restart').removeClass('active');
             },1000);
             
             
@@ -142,7 +159,6 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
     },
     //Guarda el progreso de la actividad en el servidor
     save : function(withMessage) {
-        console.log(this);
         withMessage = (withMessage !== undefined) ? withMessage : true;
         $.post(basePath + '/workboard/answer', {
             activity_id : this.get('id'),

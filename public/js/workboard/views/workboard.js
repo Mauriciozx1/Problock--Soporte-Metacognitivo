@@ -33,6 +33,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
     chat : undefined,
     nNewMessage : 0,
     nNewScreen : 0,
+    modelW : undefined,
 
 
 
@@ -56,10 +57,11 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         var teamwork = window.teamworkid;
         var statusTeam = window.statusTeam;
         console.log(window.teamworkid);
+        /*
         if(teamwork != null && statusTeam == null && this.currentActivity.get('type') == 'Grupal'){
             this.onChronometer();
-        }
-        var statusUser = window.userStatus;
+        }*/
+        var statusUser = this.currentActivity.get('userStatus');
 
         var channel = Echo.join('status.'+ window.problemid);
         channel.here( data => {
@@ -98,47 +100,105 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                 window.chatHelp.newNotification('help');
             }
         })
+        
         //Solicitud para cambiar Grupo
         channel.listen('.updateTeam', data =>{
             var teamworkid = null;
             data.teamworks.forEach(element => {
-                var count = 0;
+                var change = false;
+                teamwork = element;
                 teamworkid = element.id;
                 element.students.forEach(element => {
-                    count++;
+
                     if(element.id == window.user.id && window.teamworkid != teamworkid){
-                        this.resetActivity();
-                    }
-                    if(element.id == window.user.id && window.teamworkid == teamworkid){
-                        CSLP.message.warning('En 60 segundos un integrante se cambiara de grupo.');
-                        window.usercount = count;
+                        //this.resetActivity('user');
+                        var teamworksHere = data.teamworks.find(element => element.id == window.teamworkid);
+                        
+                        var teamworksOther = data.teamworks.find(element => element.id == teamworkid);
+                        
+                        console.log(teamworksHere);
+                        console.log(teamworksOther);
+                        var channelHere = Echo.join('workspace.'+this.currentActivity.get('id')+window.teamworkid);
+                        var channelOther = Echo.join('workspace.'+this.currentActivity.get('id')+teamworkid);
+
+                        var seg = 0;
+
+                        CSLP.message.warning('En 60 segundos se te cambiara de grupo.');
+                        channelHere.whisper('removeInterger',{message : 'En 60 segundos un integrante se cambiara de grupo.', teamworkid : window.teamworkid});
+                        channelOther.whisper('addInterger',{message : 'En 60 segundos un nuevo integrante se incorpora al grupo.', teamworkid : teamworkid}); 
+                            
+                        var tempoReset = setInterval(function(){
+                            seg++;
+                            if(seg == 30){
+                                CSLP.message.warning('Quedan 30 segundos para cambiarte de grupo');
+                                channelHere.whisper('removeInterger',{message : 'En 30 segundos un integrante se cambiara de grupo.', teamworkid : window.teamworkid});
+                                channelOther.whisper('addInterger',{message : 'En 30 segundos un nuevo integrante se incorpora al grupo.', teamworkid : teamworkid}); 
+                            }
+
+                            if(seg == 50){
+                                CSLP.message.warning('Quedan 10 segundos para cambiarte de grupo');
+                                channelHere.whisper('removeInterger',{message : 'En 10 segundos un integrante se cambiara de grupo.',  teamworkid : window.teamworkid});
+                                channelOther.whisper('addInterger',{message : 'En 10 segundos un nuevo integrante se incorpora al grupo.',  teamworkid : teamworkid}); 
+                            }
+
+                            if(seg == 55){
+                                this.$('.loading-container-restart').addClass('active');
+                                CSLP.message.warning('Quedan 5 segundos para cambiarte de grupo');
+                            }
+
+                            if(seg == 60){
+                                channelHere.whisper('removeInterger',{teamwork : teamworksHere, message : null, teamworkid : window.teamworkid});
+                                channelOther.whisper('addInterger',{teamwork : teamworksOther, message : null, teamworkid : teamworkid}); 
+                                clearInterval(tempoReset);
+                                location.reload();      
+                            }
+                            console.log(seg);
+                        }, 1000);                  
                     }
                 });
             });
+            
         })
+
     },
-    resetActivity : function(){
-        CSLP.message.warning('En 60 segundos te cambiaras de grupo.');
-        if(window.tempo.get('id')){
-            clearInterval(window.tempo.get('id'));
-        }
+    updateWaiting : function(){
+        this.modelW.update(this.wait);
+        this.onChronometer();      
+    },
+    resetActivity : function(type){
+        if(type == 'user'){
+            CSLP.message.warning('En 60 segundos te cambiaras de grupo.');
+            if(this.currentActivity.get('type') == 'Grupal'){
+                this.$('#chronometer').html('En 60 segundos sera cambiado de grupo');
+                if(window.tempo.get('id') != 0){
+                    clearInterval(window.tempo.get('id'));
+                }
+            }
+        } 
         var seg = 0;
         var tempoReset = setInterval(function(){
             
             if(seg == 30){
-                CSLP.message.warning('Quedan 30 segundos para cambiarte de grupo');
+                if(type == 'user'){
+                    
+                }
             }
             if(seg == 50){
-                CSLP.message.warning('Quedan 10 segundos para cambiarte de grupo');
+                if(type == 'user'){
+                    CSLP.message.warning('Quedan 10 segundos para cambiarte de grupo');
+                }
 
             }
             if(seg == 55){
-                this.$('.loading-container-restart').addClass('active');
+                if(type == 'user'){
+                    this.$('.loading-container-restart').addClass('active');
+                }
             }
             if(seg == 60){
+                if(type == 'user'){
+                    location.reload();
+                }
                 clearInterval(tempoReset);
-                location.reload();
-
             }
             seg++;
             console.log(seg);
@@ -153,6 +213,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             $('.screen-popup').hide();
         }
         $('.loading-container').hide();
+        $('.loading-container-restart').hide();
         html2canvas(document.querySelector("#workboard")).then(
             canvas =>{
                 var img = canvas.toDataURL();
@@ -247,6 +308,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                 this.$('.wait-group').hide();
                 this.$('.screen').hide();
                 this.$('.buttons').html('<button id="btn-save" class="btn-green">Guardar</button><button id="btn-finish" class="btn-blue">Finalizar</button>');
+                
                 if(window.userStatus == 'check_circle'){
                     console.log('AFK');
                     window.WB.currentActivity.setAFK();
@@ -267,6 +329,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                 this.wait = [];
                 this.$('.wait-group').show();
                 var model = new CSLP.Workboard.Models.Waiting();
+                this.modelW = model;
                 this.setConectionTeam(model);
                 this.$('.screen').show();
                 this.$('.buttons-lider').show();
@@ -279,7 +342,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             this.setLoading(true);
             this.currentActivity.fetchInfo();
             
-            console.log(window.userStatus);
+            console.log(this.currentActivity.get('userStatus'));
             
             this.setConectionStatus();
                
@@ -291,12 +354,13 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
         var mn = 00;
         var online = window.chatView.online;
         console.log(online);
-        if(online.length != window.usercount){
+        if(online.length != window.usercount && window.tempo.get('id') == 0){
+            this.$('#chronometer').fadeIn();
             var tempo = setInterval(function(){
                 window.tempo.set('id', tempo);
                 sg = window.tempo.get('seconds');
                 mn = window.tempo.get('minutes');
-                console.log(window.teamworkid);
+                console.log(tempo);
                 if(sg < 10 && window.tempo.get('pivotesg') == false){
                     sg = '0'+sg;
                 }
@@ -304,7 +368,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                     mn = '0'+mn;
                     window.tempo.set('pivotemn', true);
                 }
-                this.$('#chronometer').html('<strong>Tiempo de Espera: '+mn+':'+sg+'</strong>');
+                this.$('#chronometer').html('<strong>Integrante/s desconectado/s - Tiempo de Espera: '+mn+':'+sg+'</strong>');
                 
                 
                 if(mn == 00 && sg == 00){
@@ -323,6 +387,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
             },1000); //poner en marcha el temporizador.
         }
         if(window.chatView.online.length == window.usercount){
+            this.$('#chronometer').fadeOut();
             if(window.tempo.get('id') != 0){
                 clearInterval(window.tempo.get('id'));
                 window.tempo.reset();
@@ -358,9 +423,15 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
     setConectionTeam : function(modelWait){
         Echo.join('workspace.' +this.currentActivity.get('id')+window.teamworkid)
             .here(user => {
-                this.wait.push(user[0]);
-                modelWait.update(this.wait, 0, 10);
+                console.log(user);
+                this.wait = user;
+                if(window.tempo.get('id') == 0){
+                    this.onChronometer();
+                }
+                modelWait.update(user);
                 this.user = user[0];
+                console.log('here');
+                
             }) 
 
             .listen('.vote', (e) => {
@@ -380,51 +451,108 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                 console.log(data);
                 window.voteView.render();
             })
+
+            .listenForWhisper('removeInterger', data =>{
+                if(data.message == null){
+                    window.usercount = data.teamwork['students'].length;
+                    modelWait.set('status', false);
+                    modelWait.update(data.teamwork.students);
+                    console.log('UpdateModelWait');
+                }else{
+                    CSLP.message.warning(data.message);
+                }
+                
+                
+            })
+            .listenForWhisper('addInterger', data =>{
+                if(data.message == null){
+                    window.usercount = data.teamwork['students'].length;
+                    modelWait.set('status', false);
+                    modelWait.update(data.teamwork.students);
+                }else{
+                    CSLP.message.warning(data.message);
+                }
+                
+                
+            })
+
             //Actualizamos el array a todos los usuarios
             .listenForWhisper('update', data => {
-                this.wait = data.arrayWait;
+                console.log('update');
+                //this.wait = data.arrayWait;
+                console.log(window.tempo.get('id'));
+
+                clearInterval(window.tempo.get('id'));
+                window.tempo.reset();
+                
+                console.log(window.tempo.get('id'));
+                
                 window.tempo.update(data.sg, data.mn);
                 window.tempo.set('pivotemn', true);
+
+                if(this.wait.length == window.usercount){
+                    modelWait.set('status', false);
+                }
                 modelWait.update(this.wait);
                 
             })
             
             .joining(user => {
                 this.wait.push(user);
-                modelWait.update(this.wait);
+
+                if(this.wait.length == window.usercount){
+                    modelWait.set('status', false);
+                }
                 var mn = window.tempo.get('minutes');
                 var sg = window.tempo.get('seconds');
-                console.log(this.sg);
-                console.log(this.mn);
+
                 Echo.join('workspace.'+this.currentActivity.get('id')+window.teamworkid)
-                    .whisper('update',{arrayWait : this.wait, sg : sg, mn : mn})  
+                    .whisper('update',{sg : sg, mn : mn})  
 
                 CSLP.message.success( user.name+' '+user.flastname + ' se ha conectado.');
-                
+                modelWait.update(this.wait);
+                if(window.chatView.online.length == window.usercount){
+                    this.$('#chronometer').fadeOut();
+                    if(window.tempo.get('id') != 0){
+                        clearInterval(window.tempo.get('id'));
+                        window.tempo.reset();
+                    }
+                }
+
             })
+
             .leaving(user => {
                 this.wait = this.wait.filter(u => u.id != user.id);
                 CSLP.message.error( user.name+' '+user.flastname + ' se ha desconectado.');
                 var statusVote = window.voteView.modelVote.get('status');
                 var statusFinish = window.voteView.modelVote.get('statusFinish');
-                var mn = window.tempo.get('minutes');
-                var sg = window.tempo.get('seconds');
-                Echo.join('workspace.'+this.currentActivity.get('id')+window.teamworkid)
-                    .whisper('update',{arrayWait : this.wait, sg : sg, mn : mn})
-                modelWait.update(this.wait);
                 modelWait.set('status', true);
-                if(window.tempo.get('id') == 0){
-                    this.onChronometer();
-                }
+                modelWait.update(this.wait);
+                console.log(user);
+
                 if(statusVote == true && statusFinish == false){
                     window.voteView.cancel();
                 }
+                console.log(window.chatView.online);
+                console.log(this.wait);
+                console.log(window.usercount);
+                window.WB.onChronometer();
+                console.log('crono');
+                
+                /*if(this.wait.length == window.usercount){
+                    this.$('#chronometer').fadeOut();
+                    if(window.tempo.get('id') != 0){
+                        clearInterval(window.tempo.get('id'));
+                        window.tempo.reset();
+                    }
+                }*/
+
                 /*
                 if(statusVote == true && statusFinish == true){
                     this.$('.wait-group').fadeOut(0);
                 }*/
+
             })
-      
             
     },
 

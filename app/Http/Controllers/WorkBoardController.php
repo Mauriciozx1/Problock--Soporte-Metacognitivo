@@ -63,22 +63,25 @@ class WorkBoardController extends Controller {
             $statusTeam = StatusTeam::where('id_team', Input::get('teamwork_id'))->where('id_problem', $groupActivity->problem_id)->first();
             
             $studentsTeamwork = TeamworkInscription::where('teamwork_id',Input::get('teamwork_id'))->pluck('student_id');
-            
-            $countOnline = 0;
-            $today = Carbon::today();
-            foreach($studentsTeamwork as $studentID){
-                $status = StatusProblem::where('user_id', $studentID)->where('problem_id', $groupActivity->problem_id)->whereDate('updated_at', '<=', $today)->first();
-                $statusData = StatusProblem::where('user_id', $studentID)->where('problem_id', $groupActivity->problem_id)->first();
-                dd($today);
-                if($status){
-                    //Comprobamos la fecha de la crecion del estado
-                    $countOnline++;
-                }else{
-                    if($statusData){
-                        StatusProblem::destroy($statusData->id);
+            $students = Input::get('online');
+            $countOnline = count($students);
+            foreach($studentsTeamwork as $sID){
+                $status = StatusProblem::where('user_id', $sID)->where('problem_id', $groupActivity->problem_id)->first();
+                $countP = 0;
+                $in = false;
+                foreach($students as $student){
+                    $countP++;
+                    if($status){
+                        if($student['id'] == $sID){
+                            $in = true;
+                        }
+                        if($countP == $countOnline && $in == false){
+                            StatusProblem::destroy($status->id);
+                        }   
                     }
                 }
             }
+
             //Establecemos estado AFK al grupo con ausencia de integrantes.
             if($statusTeam == null){
                 if($countOnline == 1){
@@ -90,81 +93,90 @@ class WorkBoardController extends Controller {
                 }
             }
             
-
-            //recorremos lista de integrantes por grupo.
-            foreach($studentsTeamwork as $sID){
-                //estado de cada estudiante
-                $status = StatusProblem::where('user_id', $sID)->where('problem_id', $groupActivity->problem_id)->first();
-                $idTeams = [];
-                $teams = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->pluck('teamwork_id');
-                foreach($teams as $t){
-                    if($idTeams == null){
-                        array_push($idTeams, $t);
-                    }else{
-                        if($idTeams[count($idTeams)-1] != $t){
-                            array_push($idTeams, $t);
+            if($countOnline != count($studentsTeamwork)){
+                //recorremos lista de integrantes por grupo.
+                foreach($studentsTeamwork as $sID){
+                    //estado de cada estudiante
+                    $status = StatusProblem::where('user_id', $sID)->where('problem_id', $groupActivity->problem_id)->first();
+                    $idTeams = [];
+                    $teams = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->pluck('teamwork_id');
+                    foreach($teams as $t){
+                        $team = true;
+                        $countUser = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->where('teamwork_id',$t)->pluck('student_id');
+                        if($countUser == null){
+                            $team = false;
                         }
-                    }
-                }
-                
-                $countTeam = count($idTeams);
-                //no existe un estado, se revisa la inscripcion. 
-                if($status == null){
-                    $inscription = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->where('student_id', $sID)->first();
-                    $pivote = false;
-                    $pivoteN = 0;
-
-                    //se recorre las lista de grupos
-                    foreach($idTeams as $teamID){
-                        $statusTeamID = StatusTeam::where('id_team', $teamID)->where('id_problem', $groupActivity->problem_id)->first();
-
-                        //Existe grupo recien creado por usuarios AFK, se obtienen sus integrantes
-                        if($statusTeamID){
-                            if($statusTeamID->status == 'new'){
-                                $studentNewTeam = TeamworkInscription::where('teamwork_id',$teamID)->pluck('student_id');
-    
-                                // el grupo tiene menos de 3 integrantes, se integra.
-                                if(count($studentNewTeam) < 3 ){
-                                    $pivote = true;
-                                    $inscription->teamwork_id = $teamID;
-                                    $inscription->save();
-                                }
-                                //el grupo esta lleno,
-                                if(count($studentNewTeam) == 3 ){
-                                    $pivote = false;
-                                    // se elimina estado 
-                                    StatusTeam::destroy($statusTeamID->id);
+                        
+                        if($idTeams == null && $team == true){
+                            array_push($idTeams, $t);
+                        }else{
+                            $in = false;
+                            foreach($idTeams as $id){
+                                if($id == $t){
+                                    $in = true;
                                 }
                             }
+                            if($in == false){
+                                array_push($idTeams, $t);
+                            }
                         }
-                        
-                        $pivoteN++;
-                        //No existe grupo con estado "new", se crea grupo
-                        if($countTeam == $pivoteN && $pivote == false){
-                            $teamwork = new Teamwork;
-                            $teamwork->name = 'Nuevo equipo: ' . ($countTeam+1);
-                            $teamwork->save();
-    
-                            //Actualizamos la inscripcion
-                            $inscription->teamwork_id = $teamwork->id;
-                            $inscription->save();
-    
-                            //Generamos su estado "new"
-                            $statusTeam = new StatusTeam;
-                            $statusTeam->id_team = $teamwork->id;
-                            $statusTeam->id_problem = $groupActivity->problem_id;
-                            $statusTeam->status = 'new';
-                            $statusTeam->save();
-                        }
-                        
                     }
-                     
-                     
-                    
+                    $countTeam = count($idTeams);
+                    //no existe un estado, se revisa la inscripcion. 
+
+                    if($status == null){
+                        $inscription = TeamworkInscription::where('problems_id', $groupActivity->problem_id)->where('student_id', $sID)->first();
+                        $pivote = false;
+                        $pivoteN = 0;
+
+                        //se recorre las lista de grupos
+                        foreach($idTeams as $teamID){
+                            $statusTeamID = StatusTeam::where('id_team', $teamID)->where('id_problem', $groupActivity->problem_id)->first();
+
+                            //Existe grupo recien creado por usuarios AFK, se obtienen sus integrantes
+                            if($statusTeamID){
+                                if($statusTeamID->status == 'new'){
+                                    $studentNewTeam = TeamworkInscription::where('teamwork_id',$teamID)->pluck('student_id');
+        
+                                    // el grupo tiene menos de 3 integrantes, se integra.
+                                    if(count($studentNewTeam) < 3 ){
+                                        $pivote = true;
+                                        $inscription->teamwork_id = $teamID;
+                                        $inscription->save();
+                                    }
+                                    //el grupo esta lleno,
+                                    if(count($studentNewTeam) == 3 ){
+                                        $pivote = false;
+                                        // se elimina estado 
+                                        StatusTeam::destroy($statusTeamID->id);
+                                    }
+                                }
+                            }
+                            
+                            $pivoteN++;
+                            //No existe grupo con estado "new", se crea grupo
+                            if($countTeam == $pivoteN && $pivote == false){
+                                $teamwork = new Teamwork;
+                                $teamwork->name = 'Nuevo equipo: ' . ($countTeam+1);
+                                $teamwork->save();
+        
+                                //Actualizamos la inscripcion
+                                $inscription->teamwork_id = $teamwork->id;
+                                $inscription->save();
+        
+                                //Generamos su estado "new"
+                                $statusTeam = new StatusTeam;
+                                $statusTeam->id_team = $teamwork->id;
+                                $statusTeam->id_problem = $groupActivity->problem_id;
+                                $statusTeam->status = 'new';
+                                $statusTeam->save();
+
+                            }   
+                        }                    
+                    }  
                 }
-                
-                
             }
+            
             $infoTeamwork = TeacherController::getExerciseTeamwork($groupActivity->problem_id);
             $arrayTeam = json_decode($infoTeamwork['teamworks']);
             foreach($arrayTeam as $team){
@@ -172,6 +184,19 @@ class WorkBoardController extends Controller {
                 if($status){
                     if($status->status == 'afkTeam'){
                         $team->status = 'afk';
+                    }
+                }
+                foreach($team->students as $student){
+                    $status = StatusProblem::where('problem_id', $groupActivity->problem_id)->where('user_id', $student->id)->first();
+                    if($status){
+                        if($status->status == 'afk'){
+                            $student->status = 'error_outline';
+                            $student->color = 'orange';
+                        }
+                        if($status->status == 'online'){
+                            $student->status = 'check_circle';
+                            $student->color = 'green';
+                        }
                     }
                 }
             }
@@ -394,8 +419,16 @@ class WorkBoardController extends Controller {
         $teamworkID = Input::get('teamworkid');
     
         $ActivityLider = TeamworkActivity::where('activity_id', $activitiID)->where('teamwork_id', $teamworkID)->first();
-
-        if($ActivityLider == null){
+        $TeamworkInscription = TeamworkInscription::where('teamwork_id', $teamworkID)->pluck('student_id');
+        $in = false;
+        if($ActivityLider != null){
+            foreach($TeamworkInscription as $uID){
+                if($uID == $ActivityLider->user_lider_id){
+                    $in = true;
+                }
+            }
+        }
+        if($ActivityLider == null || $in == false){
             $TeamworkInscription = TeamworkInscription::where('teamwork_id', $teamworkID)->pluck('student_id');
             $arrayInterger = [];
             foreach($TeamworkInscription as $idUser){
@@ -404,9 +437,11 @@ class WorkBoardController extends Controller {
 
             $lider = array_rand($arrayInterger,1);
             $lider = $arrayInterger[$lider];
-            $ActivityLider = new TeamworkActivity;
-            $ActivityLider->teamwork_id = $teamworkID;
-            $ActivityLider->activity_id = $activitiID;
+            if($ActivityLider == null){
+                $ActivityLider = new TeamworkActivity;
+                $ActivityLider->teamwork_id = $teamworkID;
+                $ActivityLider->activity_id = $activitiID;
+            }
             $ActivityLider->user_lider_id = $lider;
             $ActivityLider->save();
         }
