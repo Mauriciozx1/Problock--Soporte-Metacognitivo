@@ -239,12 +239,13 @@
             </div>   
         </div>
     @endif
-    <button id="btn-tour" class="btn-tour btn-blue">Tour</button>
+    <button id="btn-tour" class="btn-tour btn-blue">Tutorial</button>
+    
     @if($type == 'Grupal')
         <div id="wait-group" class="wait-group">
             
             <div class="content-wait" >
-                <div id="chronometer" class="button-view-menu btn-green"><strong>Integrante/s desconectado/s - Tiempo de Espera: '10':'00'</strong></div>  
+                <div id="chronometer" class="button-view-menu btn-green"><strong>Integrante/s desconectado/s - Tiempo de Espera: 10:00</strong></div>  
                 <strong id ="info-wait">Esperando a integrantes del grupo, para comenzar actividad.</strong>
                 <div class="grup-wait">
                     <div class="content-grup">

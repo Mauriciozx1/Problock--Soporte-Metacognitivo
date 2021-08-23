@@ -34,6 +34,7 @@ CSLP.Workboard.Views.FrameHeader = Backbone.View.extend({
         window.WB.currentActivity.set('answer', window.blocklyPanel.toText());
         window.WB.currentActivity.set('methode','save');
         window.WB.currentActivity.save();
+        window.WB.currentActivity.sendInteraction('Guarda la actividad', null);
     },
 
     finish : function() {
@@ -43,6 +44,7 @@ CSLP.Workboard.Views.FrameHeader = Backbone.View.extend({
             codePanel.updateCode();
             finishModal.show();
             //window.WB.currentActivity.save(false);
+            window.WB.currentActivity.sendInteraction('Finaliza actividad', null);
         } else {
             blocklyPanel.displayErrorMessage(testResult.error, testResult.blockId);
         }
@@ -55,6 +57,7 @@ CSLP.Workboard.Views.FrameHeader = Backbone.View.extend({
             codePanel.updateCode();
             window.WB.currentActivity.set('methode','vote');
             finishModal.show();
+            window.WB.currentActivity.sendInteraction('Inicio de proceso de votación', null);
             window.WB.currentActivity.save(false);
             //$('.finish-modal').hide();
             

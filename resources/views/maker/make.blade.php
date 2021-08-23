@@ -34,9 +34,10 @@
                     </div>
                 </div>
                 {{--GENERAL BUTTONS--}}
-                <div style="text-align: right; padding: 1.2rem 2rem 0 0">
-                    <button class="btn-save btn-blue">Guardar</button>
-                    <button class="btn-delete btn-red" style="font-size: 14px; padding: 0.2rem 0.5rem">Borrar Actividad</button>
+                <div class="btns" style="text-align: right; padding: 1.2rem 2rem 0 0">
+                    <button id="btnsave" class="btn-save btn-blue">Guardar</button>
+                    <button id="btndelete" class="btn-delete btn-red" >Borrar Actividad</button>
+                    <button id="btn-tour" class="btn-tour btn-blue" title="Tutorial"><i class="material-icons" style="font-size:1.94rem;vertical-align:bottom">help</i></button>
                 </div>
                 {{--SECTION SELECTOR--}}
                 
@@ -44,7 +45,6 @@
                     <span id="selector-basic-info" class="selector-option no-select active " data-target="#basic-info-section">Información Básica</span>
                     <span id="selector-questions" class="selector-option no-select" data-target="#questions-section">Preguntas restrospectivas</span>
                     <span id="selector-objectives" class="selector-option no-select" data-target="#objectives-section">Objetivos Pedagógicos</span>
-                    
                 </div>
                 {{--ACTIVITY INFO--}}
                 <div id="activity-info-section" class="activity-info">
@@ -228,6 +228,7 @@
 
                                 <div id="output-console" class="output-panel-console"></div>
                             </div>
+                            
                         </div>
                     </section>
                     
@@ -324,12 +325,12 @@
         </ul>
         @if($type === "Individual")
         <div style="text-align: center; margin-top: 0.5rem;">
-            <span class="btn-add-i">+</span>
+            <span id="btn-add" class="btn-add-i">+</span>
             </div>
         @endif
         @if($type === "Grupal")
         <div style="text-align: center; margin-top: 0.5rem;">
-            <span class="btn-add-g">+</span>
+            <span id="btn-add" class="btn-add-g">+</span>
         </div>
         <div class="activities-type" style="color: #000000;" placeholder="Tipo">
         {{ csrf_field() }}

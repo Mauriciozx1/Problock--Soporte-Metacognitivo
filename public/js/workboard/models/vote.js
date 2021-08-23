@@ -33,6 +33,7 @@ CSLP.Workboard.Models.Vote = Backbone.Model.extend({
                 CSLP.message.error('El termino de la actividad fue rechazada.');
                 $('.btn-finish-vote-cancel').fadeIn();
             }
+            window.WB.currentActivity.sendInteraction('Votacíon finalizada', this.get(vote));
             
         }     
     },

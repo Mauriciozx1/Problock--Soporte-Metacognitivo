@@ -149,12 +149,14 @@ Route::post('maker/savegroupname', 'MakerController@postSavegroupname');
 // Workboard
 Route::get('workboard/view/{id}','WorkBoardController@getView');
 Route::get('workboard/activityinfo/{id}', 'WorkBoardController@getActivityinfo');
-Route::post('workboard/lider', 'WorkBoardController@postLider');
 Route::get('workboard/wait/{id}', 'WorkboardController@getWait');
 Route::post('workboard/answer','WorkBoardController@postAnswer');
 Route::post('workboard/state','WorkBoardController@postState');
+Route::post('workboard/interaction','InteractionController@postInteraction');
+Route::post('workboard/lider', 'WorkBoardController@postLider');
 
 // Teacher
+Route::get('teacher/interaction/{id}', 'InteractionController@getInteraction');
 Route::get('teacher/view/{id}', 'TeacherController@getStates');
 Route::get('teacher/scores/{id}', 'TeacherController@getScores');
 Route::get('teacher/steamwork/{id}', 'TeacherController@getSTeamwork');

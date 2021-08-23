@@ -7,7 +7,7 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
         'click .btn-remove-result-value' : 'removeExpectedResult',
         'click .select-chat' : 'selectStudent',
         'click .options-grups' : 'viewModalReGrup',
-        
+ 
     },
 
     currentActivity : undefined,
@@ -59,7 +59,10 @@ CSLP.State.Views.ViewStudents = Backbone.View.extend({
     viewModalReGrup : function(){
         window.regrups.show();
     },
-
+    exportLog : function(){
+        
+        
+    },
     setStatusTeam : function(teamworks){
         this.teamWorks = teamworks;
         window.teamwork.set('teamworks', teamworks); 

@@ -32,7 +32,6 @@ CSLP.Workboard.Views.VoteView = Backbone.View.extend({
         
         this.show();
     },
-    
     show : function(){
         this.$el.fadeIn();
         this.modelVote.set('status', true);

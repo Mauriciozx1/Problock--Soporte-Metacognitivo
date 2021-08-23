@@ -9,8 +9,7 @@ CSLP.Workboard.Models.Tempo = Backbone.Model.extend({
         pivotemn : false,
     },
 
-    initialize : function() {
-        
+    initialize : function() {      
     },
     
     update : function(sg, mn){
@@ -21,8 +20,8 @@ CSLP.Workboard.Models.Tempo = Backbone.Model.extend({
     reset : function(){
         var self = this;
         self.set('id', 0);
-        self.set('seconds', 0);
-        self.set('minutes', 10);
+        self.set('seconds', 30);
+        self.set('minutes', 0);
         self.set('pivotesg', false);
         self.set('pivotemn', false);
     }

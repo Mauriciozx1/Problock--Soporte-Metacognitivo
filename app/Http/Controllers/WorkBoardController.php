@@ -32,6 +32,7 @@ class WorkBoardController extends Controller {
     public function getIndex() {
         return redirect('/problems');
     }
+
     public function postState() {
         //obtener id del problema
         $groupLink = GroupActivityLink::where('activity_id', Input::get('activity_id'))->first();
@@ -54,6 +55,7 @@ class WorkBoardController extends Controller {
 
             //Envio de evento al profesor
             broadcast(new StatusSent($groupActivity->problem_id, $modelStatus))->toOthers();
+ 
         }
         //si es un estado de Grupo
         if(Input::get('status') == 'afkTeam'){

@@ -35,8 +35,6 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
     nNewScreen : 0,
     modelW : undefined,
 
-
-
     initialize : function() {
         //Reajuste de la pantalla de trabajao dependiendo del cambio de tama�o de la ventana
         
@@ -221,6 +219,7 @@ CSLP.Workboard.Views.Workboard = Backbone.View.extend({
                 Echo.join('workspace.'+ window.activitiId+window.teamworkid)
                     .whisper('shareScreen', data);
                 CSLP.message.success('Desarrollo enviado correctamente');
+                this.currentActivity.sendInteraction('Envia captura de desarrollo', data);
             })
     },
     viewShare : function(){

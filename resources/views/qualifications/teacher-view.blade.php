@@ -18,7 +18,8 @@
 @section('content')
 
     <h1 class="exercise-name">{!! $exercise !!}</h1>
-    <div class="section-selectors">
+    
+    <div class="section-selectors" >
         <ul>
             <li class="section-selector active" data-target="#scores-section">Calificaciones</li>
             <li class="section-selector" data-target="#statistics-section">Estadísticas de Calificaciones </li>

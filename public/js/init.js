@@ -95,16 +95,29 @@ CSLP.Helper.Tour = function(steps) {
     });
     helper.oncomplete(function() {
         helperView.removeClass('hidden-helper');
+        if($('#exercise-tour').is(':visible')){
+            $('#exercise-tour').hide();
+        }
+        if($('#student-tour').is(':visible')){
+            $('#student-tour').hide();
+        }
     });
     helper.onexit(function() {
         helperView.removeClass('hidden-helper');
+        if($('#exercise-tour').is(':visible')){
+            $('#exercise-tour').hide();
+        }
+        if($('#student-tour').is(':visible')){
+            $('#student-tour').hide();
+        }
     });
     helper.onbeforechange(function() {
         if(this._introItems[this._currentStep - 1] != undefined) {
             if(this._introItems[this._currentStep - 1].onComplete != undefined)
-                this._introItems[this._currentStep - 1].onComplete();
+                this._introItems[this._currentStep - 1].onComplete();   
         }
     });
+
 
     return helper;
 };

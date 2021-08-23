@@ -49,9 +49,171 @@ $(document).ready(function() {
         window.dispatchEvent(new Event('resize'));
 
     });
-
+//HELPER
+    //Añadimos un healper para actividades grupales
+    window.app.tour = CSLP.Helper.Tour(steps);
+    //helper para actividades individuales(problema grupal)
+    //helper para actvidades individuales(problema individual)
+    //Activando el boton de tour
+    $('#btn-tour').on('click', function() {
+        window.app.tour.start();
+    });
 });
+var steps = [
+    {
+        intro: 'Acá podrás crear todas las actividades que los estudiantes tendrás que realizar, existen grupos de actividades los cuales son 4.'
+    },
+    {
+        element: '#btnsave',
+        intro: 'Presionando este botón guardaras todos los cambios realizados dentro de la actividad.'
+    },
+    {
+        element: '#btndelete',
+        intro: 'Presionando este botón eliminaras la actividad.'
+    },
+    {
+        element: '#activities-menu',
+        intro: 'Dentro de esta sección se visualizarán las actividades correspondientes a cada grupo. ',
+        position: 'right'
+    },
+    {
+        element: '#btn-add',
+        intro: 'Presionando este botón podrás crear una actividad, si el problema es de tipo <b>Grupal</b> tendrás que elegir el tipo de actividad. Donde las actividades grupales los estudiantes son agrupados de 3 y 1 integrante es el líder que realizara la finalización de la actividad. ',
+        position: 'right',
+        
+    },
+    {
+        element:'#selector-basic-info',
+        intro:'En esta sección definirás la información básica de la actividad. ',
+        onComplete : function(){
+            $('.selector-option.active').removeClass('active');
+            $('#selector-basic-info').addClass('active');
+            $('.section.active').removeClass('active');
+            $('#basic-info-section').addClass('active');
+            $('.blocklyToolboxDiv').hide();
+        }
+        
+    },
+    {
+        element: '#frm-activity-name',
+        intro: 'Acá escribirás el titulo de la actividad.',
 
+    },
+    {
+        element: '.activity-resource',
+        intro: 'Acá definirás todos los detalles de la actividad, como las reglas e indicación de que hacer para cumplir con los objetivos, también puedes añadir enlaces o imágenes para poder aclarar mas lo que hay que hacer.'
+    },
+    {
+        element:'#selector-questions',
+        intro:'En esta sección tendrás la opción de incluir preguntas retrospectivas, el cual serán visualizadas en el término de la actividad. ',
+        onComplete : function(){
+            $('.selector-option.active').removeClass('active');
+            $('#selector-questions').addClass('active');
+            $('.section.active').removeClass('active');
+            $('#questions-section').addClass('active');
+            $('.blocklyToolboxDiv').hide();
+            
+        }
+        
+    },
+    {
+        element: '.content-options-questions',
+        intro: 'Existen 2 tipos de preguntas que puedes realizar dentro de finalización de una actividad, estas son de tipo cuantitativas o cualitativas. ',
+        onComplete : function(){
+            $('#questions-quantitative').prop('checked', false);
+            $('#add-quantitative').hide();
+        }
+    },
+    {
+        element: '.quantitative-question',
+        intro: 'Presionando el cuadro de selección, activaras las preguntas <b>cuantitativas</b>.',
+        onComplete : function(){
+            $('#questions-quantitative').prop('checked', true);
+            $('#add-quantitative').show();
+        }
+
+    },
+    {
+        element: '#content-add-quantitative',
+        intro: 'Problock tiene preguntas cuantitativas predeterminadas que puedes utilizar.',
+        onComplete : function(){
+            $('#questions-quantitative').prop('checked', true);
+            $('#add-quantitative').show();
+        }
+    },
+    {
+        element: '#btn-add-quantitative',
+        intro: 'También puedes crear tus preguntas, presionando este botón. Teniendo en cuenta que debes de definir la escala donde 1 es lo más bajo y 10 lo más alto.',
+        onComplete : function(){
+            $('#questions-quantitative').prop('checked', false);
+            $('#add-quantitative').hide();
+        }
+    },
+    {
+        element: '.qualitative-question',
+        intro: 'Presionando el cuadro de selección, activaras las preguntas <b>cualitativas</b>.',
+        onComplete : function(){
+            $('#questions-qualitative').prop('checked', true);
+            $('#add-qualitative').show();
+        }
+
+    },
+    {
+        element: '#content-add-qualitative',
+        intro: 'Problock tiene preguntas cualitativas predeterminadas que puedes utilizar.',
+        onComplete : function(){
+            $('#questions-qualitative').prop('checked', true);
+            $('#add-qualitative').show();
+        }
+    },
+    {
+        element: '#btn-add-qualitative',
+        intro: 'También puedes crear tus preguntas, presionando este botón.',
+        onComplete : function(){
+            $('#questions-qualitative').prop('checked', false);
+            $('#add-qualitative').hide();
+        }
+
+    },
+    {
+        element:'#selector-objectives',
+        intro:'En esta sección definirás los objetivos pedagógicos que deseas obtener en la actividad.',
+        onComplete : function(){
+            $('.selector-option.active').removeClass('active');
+            $('#selector-objectives').addClass('active');
+            $('.section.active').removeClass('active');
+            $('#objectives-section').addClass('active');
+            $('.blocklyToolboxDiv').show();
+        }  
+    },
+    {
+        element: '#blockly-panel',
+        intro: 'Este es el espacio de trabajo de Problock, donde podrás crear los algoritmos en base a bloques, también puede borrar, hacer zoom y ejecutar el código.',
+        position: 'right'
+    },
+    {
+        element: '.blocklyToolboxDiv',
+        intro: 'En esta sección podrás seleccionar los bloques que deseas incluir dentro del espacio de trabajo para poder crear un algoritmo y también así definir los objetivos esperados de la actividad.',
+        position: 'right'
+    },
+    {
+        element: '#execution-controls',
+        intro: 'Presionando este botón podrás ejecutar todo el algoritmo creado y probarlo.',
+        position: 'left'
+    },
+    {
+        element: '#output-panel',
+        intro: 'Acá se visualizará la respuesta o resultado del algoritmo creado en base a bloques.',
+        position: 'left'
+    },
+    {
+        element: '#objectives-panel',
+        intro: 'En esta sección se definen los objetivos esperados en la actividad, también definir si lo que se desea es opcional o de uso obligatorio.',
+        position: 'left'
+    }
+
+
+];
 function exportIMSLD() {
     var exercise = {
         name : 'Calculadora de Calorias'

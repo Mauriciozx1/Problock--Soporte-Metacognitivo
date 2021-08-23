@@ -174,7 +174,7 @@ class TeacherController extends Controller {
         $problemData = json_encode(MakerController::getProblem($problemid));
         
 
-        return view('/maker/view-state', ['type' => $problem->type_problem,'idProblem' => $problemid,'status' => $status,'problem' => $problemData, 'infoTeamwork' => $info, 'usersCourse' => $usersCourse]);
+        return view('/maker/view-state', ['problemData' => Problem::find($problemid), 'type' => $problem->type_problem,'idProblem' => $problemid,'status' => $status,'problem' => $problemData, 'infoTeamwork' => $info, 'usersCourse' => $usersCourse]);
     }
     public function getExerciseTeamworkScore($exerciseId = 1) {
         $problem = Problem::find($exerciseId);

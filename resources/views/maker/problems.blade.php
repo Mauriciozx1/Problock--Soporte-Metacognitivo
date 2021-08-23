@@ -8,10 +8,11 @@
     <link href="{!! asset('/css/maker/exercises.css') !!}" rel="stylesheet">
 
     <script>
-        
+        var typeUser = 'student';
         courses = {!!$courses!!};
         @if($type === 'teacher')
             students = {!! $students !!};
+            typeUser = 'teacher';
         @endif
     </script>
 @stop
@@ -31,14 +32,16 @@
 
                 </ul>
             </div>
-
-
             <div class="sections-container">
+                
                 @if($type === 'teacher')
                     <div class="section-selectors">
+                        <div style="text-align: right; padding: 0.5rem 2rem 0rem 0; position:absolute; right:0;">
+                            <button id="btn-tour" class="btn-tour btn-blue" title="Tutorial"><i class="material-icons" style="vertical-align:bottom">help</i></button>
+                        </div>
                         <ul>
-                            <li class="section-selector active" data-target="#exercises-panel">Problemas</li>
-                            <li class="section-selector" data-target="#students-panel">Estudiantes</li>
+                            <li id="problems-section" class="section-selector active" data-target="#exercises-panel">Problemas</li>
+                            <li id="students-section"class="section-selector" data-target="#students-panel">Estudiantes</li>
                         </ul>
                     </div>
                 @endif
@@ -54,9 +57,45 @@
                         </div>
                     @endif
                     <div></div>
-
+                    @if($type === 'student')
+                    <div style="text-align: right; padding: 0.5rem 2rem 0rem 0; position:absolute; right:0;">
+                        <button id="btn-tour" class="btn-tour btn-blue" title="Tutorial"><i class="material-icons" style="vertical-align:bottom">help</i></button>
+                    </div>
+                    @endif
                     <div id="exercises-container" class="exercises-container">
-
+                        <div id="exercise-tour" class="exercise" style="display: none;">
+                            @if($type === 'teacher')
+                            <span id="edit-problem-tour" class="btn-edit material-icons">edit</span>
+                            <a href="#"><span id="state-problem-tour" class="btn-viewP material-icons">visibility</span></a>
+                            @endif
+                            <div id="title-problem-tour" class="exercise-name">
+                                Título del Problema
+                            </div>
+                            <hr>
+                            <div id="type-problem-tour" class="exercise-type-problem">
+                                <h3>Problema: Tipo de Problema</h3>        
+                            </div>
+                            <div id="description-problem-tour" class="exercise-description">
+                                Descripción del problema creado, para explicar un poco de que se trata.
+                            </div>
+                            <hr>
+                            <div id="date-problem-tour" class="exercise-timestamps">
+                                <span>Inicio: </span><span>2020-10-15 08:48:42</span>
+                                || <span>Cierre: </span><span>2030-12-30 08:00:00</span>
+                            </div>
+                            <hr>
+                            <div class="exercise-footer">
+                                @if($type === 'teacher')
+                                <a id="edit-activity-problem-tour" class="btn-blue" href="#">Editar Actividades</a>
+                                @endif
+                                @if($type === 'student')
+                                <a id="on-activity-problem-tour" class="btn-blue" href="#">Realizar actividad</a>
+                                <span id="score-problem-tour" class="problem-score">100%</span>
+                                @endif
+                                <a id="calification-problem-tour" class="btn-green" href="#">Ver Calificaciones</a>   
+                            </div>
+                        </div>
+            
                     </div>
 
                     @if($type === 'teacher')
@@ -66,6 +105,7 @@
                             <div class="modal">
                                 <div class="modal-header">
                                     <button class="btn-delete btn-red">Eliminar Problema</button>
+                                    
                                 </div>
                                 <div class="modal-body">
                                 <div class="gruop-section">
@@ -135,7 +175,15 @@
                                     </tr>
                                 </thead>
                                 <tbody id="students-link-tbody">
-
+                                    <tr id="student-tour" class="student-row" style="display: none">
+                                        <td> <img src="{!! url('/images/no-profile.png') !!}" alt=""></td>
+                                        <td>Manuel</td>
+                                        <td>Escudero Leiva</td>
+                                        <td>m.escuderoleiva@test.cl</td>
+                                        <td>
+                                            <button class="btn-blue btn-link">Enlazar</button>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

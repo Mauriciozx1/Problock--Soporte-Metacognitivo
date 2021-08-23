@@ -7,7 +7,11 @@
 @section('head')
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <script src="{!! asset('/js/vendor/html2canvas.min.js') !!}"></script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>    
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+
 <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link href="{!! asset('/css/maker/make.css') !!}" rel="stylesheet">
     {{ csrf_field() }}
@@ -21,6 +25,7 @@
     var infoTeamworks = {!! $infoTeamwork !!};
     activityGroups = {!! $problem !!};
     var idProblem = {!! $idProblem !!};
+    var nameProblem = {!!$problemData!!};
     </script>
 @stop
 
@@ -158,20 +163,21 @@
                 {{--GENERAL BUTTONS--}}
             
                 {{--SECTION SELECTOR--}}
-                
+                <div style="text-align: right; padding: 0.5rem 2rem 0rem 0; position:absolute; right:0;">
+                    <button id="btn-tour" class="btn-tour btn-blue" title="Tutorial"><i class="material-icons" style="vertical-align:bottom">help</i></button>
+                </div>
                 <div class="section-selector" id="section-selector">
                     <span id="selector-objectives" class="selector-option no-select" data-target="#objectives-section">Objetivos Pedagógicos</span>
                     <span id="selector-view-students" class="selector-option no-select active" data-target="#view-students-section">Visualizacion de Estudiantes<div id="badge-list" class="badge-view" style="display:none"></div></span>
+                    
                 </div>
-
+                
                 
 
                 {{--ACTIVITY INFO--}}
                 <div id="activity-info-section" class="activity-info">
+                
 
-                    
-                    
-                   
                     {{--OBJECTIVES SECTION--}}
                     <section class="objectives-section section " id="objectives-section">
                         <div class="frame-content-left">
@@ -195,10 +201,7 @@
 
                             {{--OBJECTIVES PANEL--}}
                             <div id="resources-panel" class="objectives-panel frame-panel">
-
-
-
-
+                                
                             </div>
                             <div id="v-resizer-bar" class="v-resizer-bar">
                                 <i class="material-icons abs-center no-select no-event">more_horiz</i>
@@ -220,7 +223,7 @@
                             {{--EXECUTION CONTROLS--}}
                             <div class="activities-list" style="margin-bottom: 1rem; overflow">
                                 
-                                <hr>
+                                
                                 <div id="title-list-activities" class="title-list-activities" style="text-align: center; ">
                                     <strong>Lista de Estudiantes</strong><p>Presiona el nombre del estudiante para poder abrir una comuncación con el.</p>
                                 </div>
@@ -244,7 +247,101 @@
                             </div>
 
                             {{--OBJECTIVES PANEL--}}
-                            <div id="resources-panel" class="objectives-panel frame-panel">
+                            
+                            <div id="list-interactions" class="objectives-panel frame-panel">
+                                <div class="title-log">
+                                    <strong >Historial de interacción</strong>
+                                    
+                                </div>
+                                <hr>
+                                <div class="body-log">
+                                    
+                                    <div id="log-resources-panel">
+                                        <table id="simple_table" class="table" style="font-size: 12px">
+                                            <thead>
+                                              <tr>
+                                                <th>Fecha</th>
+                                                <th>Nombre</th>
+                                                <th>Actividad</th>
+                                                <th>Acción</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody id="body-simple-table">
+                                              <tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 1 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Conectado</td>
+                                              </tr>
+                                              <tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 2 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Conectado</td>
+                                              </tr><tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 1 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Desconectado</td>
+                                              </tr><tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 3 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Conectado</td>
+                                              </tr><tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 3 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Ausente</td>
+                                              </tr><tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 1 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Conectado</td>
+                                              </tr>
+                                              <tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 1 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Ausente</td>
+                                              </tr>
+                                              <tr>
+                                                <td>20:31 15/08/2021</td>
+                                                <td>Alumno 1 Prueba</td>
+                                                <td>Actividad Individual</td>
+                                                <td>Desconectado</td>
+                                              </tr>
+                                            </tbody>
+                                        </table>
+                                        <!--
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Conectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Desconectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Conectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Desconectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Conectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Desconectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Conectado ->Actividad individual</p>
+                                        <p style="font-size: 13px">20:21 15/08/2021: Alumno1 Prueba ->Desconectado ->Actividad individual</p>
+                                        <table class="table">
+                                            <thead>
+                                              <tr>
+                                                <th>Fecha</th>
+                                                <th>Nombre</th>
+                                                <th>Actividad</th>
+                                                <th>Estado</th>
+                                              </tr>
+                                            </thead>
+                                        </table>-->
+                                    </div>
+                                    <hr>
+                                    <div class="log-export">
+                                        Exportar Historial
+                                        <button id="export-log" class="btn-blue" style="padding:1px" onclick="exportLog()"><span id="btn-exportlog" class="material-icons" style="color:white" >
+                                            file_download
+                                        </span></button>
+                                    </div>
+                                    
+                                </div>
                             </div>
                             <div id="v-resizer-bar" class="v-resizer-bar">
                                 <div class="info-status" style="text-align:center; padding:1rem; ">
@@ -297,6 +394,7 @@
     <script src="{!! asset('/js/workboard/models/resource.js') !!}"></script>
     <script src="{!! asset('/js/workboard/models/chat.js') !!}"></script>
     <script src="{!! asset('/js/state/models/teamworks.js') !!}"></script>
+    <script src="{!! asset('/js/state/models/interactions.js') !!}"></script>
     
     
 
@@ -334,7 +432,53 @@
     
         
     <script>
-
+        console.log(nameProblem);
+        function exportLog(){
+            var doc = new jsPDF('p', 'pt', 'letter');  
+            var htmlstring = '';  
+            var tempVarToCheckPageHeight = 0;  
+            var pageHeight = 0;  
+            pageHeight = doc.internal.pageSize.height;  
+            specialElementHandlers = {  
+                // element with id of "bypass" - jQuery style selector  
+                '#bypassme': function(element, renderer) {  
+                    // true = "handled elsewhere, bypass text extraction"  
+                    return true  
+                }  
+            };  
+            margins = {  
+                top: 150,  
+                bottom: 60,  
+                left: 40,  
+                right: 40,  
+                width: 600  
+            };  
+            var y = 20;
+            
+            doc.setLineWidth(2);
+            doc.text(100, y = y + 30, 'Historial de Interacciones: '+nameProblem.name);  
+            doc.autoTable({  
+                html: '#simple_table',  
+                startY: 70,  
+                theme: 'grid',  
+                columnStyles: {  
+                    0: {  
+                        cellWidth: 100,  
+                    },  
+                    1: {  
+                        cellWidth: 100,  
+                    },  
+                    2: {  
+                        cellWidth: 100,  
+                    }
+                    
+                },  
+                styles: {  
+                    minCellHeight: 40  
+                }  
+            })  
+            doc.save('Historial-Interacciones.pdf');
+        }
         function allowDrop(ev) {
             window.regrups.allowDrop(ev);
         }

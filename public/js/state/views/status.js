@@ -26,11 +26,9 @@ CSLP.State.Views.Status = Backbone.View.extend({
         
         this.resize();
         this.connection();
+
     },
-    
-    toggleChat : function(){
-        console.log('HOLA');
-    },
+
     connection : function(){
         this.userOn = [];
         Echo.join('status.'+window.idProblem)
@@ -64,6 +62,32 @@ CSLP.State.Views.Status = Backbone.View.extend({
                 
             })
 
+            .listen('.new-interaction', (e)=>{
+                var nameUser = e.user.name+' '+e.user.flastname+' '+e.user.mlastname;
+                $('<tr>').append(
+                    $('<td>', {
+                        text: e.allDataDB.created_at
+                    })
+                ).append(
+                    //usuario
+                    $('<td>', {
+                        text: nameUser
+                    })
+                ).append(
+                    //actividad
+                    $('<td>', {
+                        text: e.activity.name
+                    })
+                )
+                .append(
+                    
+                    //accion
+                    $('<td>', {
+                        text: e.type
+                    })
+                ).hide().appendTo('#body-simple-table').fadeIn('slow');
+                $('#list-interactions').animate({ scrollTop: $('#log-resources-panel').height() }, 2500);
+            })
 
             .listen('.changeTeamStatus', (e)=>{
                 console.log(e)

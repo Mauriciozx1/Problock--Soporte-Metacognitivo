@@ -18,6 +18,7 @@
 
     <h1 class="exercise-name">{!! $name !!}</h1>
 
+    
     {{--<div class="section-selectors">--}}
         {{--<ul>--}}
             {{--<li class="section-selector active" data-target="#scores-section">Calificaciones</li>--}}
@@ -26,7 +27,7 @@
     {{--</div>--}}
 
     <div class="sections-container">
-
+        
         <section class="scores-section section active" id="scores-section">
             <div class="activities-table-container">
                 <table class="table">

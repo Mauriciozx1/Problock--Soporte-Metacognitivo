@@ -16,6 +16,7 @@ use CSLP\TeamworkInscription;
 use CSLP\LinkTeamworkInscription;
 use CSLP\User;
 use CSLP\Questions;
+use CSLP\StatusProblem;
 use Input;
 use Auth;
 class MakerController extends Controller {

@@ -60,15 +60,21 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
 
     //Obtiene la informacion de la actividad del servidor
     fetchInfo : function() {
+        //crear una variable que guardara la accion del evento.
+        var interaction = '';
         //Si ya contiene la informacion necesaria
-        console.log(this.fetched)
+        
         if(this.fetched) {
+            //existe data de la actividad por tanto es el cambio a una actividad ya ingresada con anterioridad.
+            interaction = 'Cambio de actividad';
             window.WB.renderActivityInfo();
-            
             window.WB.setLoading(false);
+            //Enviamos interracion para registrar en el historial.
         } else {
-            var self = this;
+            //No existe data de la actividad por tanto es un nuevo acceso.
+            interaction = 'Nuevo acceso a actividad';
             //Solicita la informacion al backend
+            var self = this;
             $.get(basePath + '/workboard/activityinfo/' + this.get('id'), function(response) {
                 self.set('answer', response.answer || '');
                 self.set('score', response.score || 0);
@@ -81,8 +87,19 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
                 window.WB.setLoading(false);
             });
         }
+        this.sendInteraction(interaction, null);
     },
-
+    sendInteraction : function(interaction, data){
+        var self = this;
+        //enviamos el registro de la interaccion.
+        $.post(basePath + '/workboard/interaction', {
+            activity_id : self.get('id'),
+            action: interaction,
+            data: data
+        }, function(response) {
+            //
+        });
+    },
     //Genera la vista asociada a
     generateView : function() {
         this.view = new CSLP.Workboard.Views.ActivityRow({
@@ -97,6 +114,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
             time++;
             console.log(tempoAfk);
             window.tempo.set('id_afk', tempoAfk);
+            //5 minutos envia el evento de estado AFK.
             if(time == 300){
                 $.post(basePath + '/workboard/state', {
                     activity_id : self.get('id'),
@@ -107,6 +125,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
                     window.tempo.set('id_afk', 0);
                     self.set('statusUser', 'error_outline');
                 });
+                this.sendInteraction('Se encuentra ausente', null);
                 clearInterval(tempoAfk);
             }
         },1000);
@@ -134,7 +153,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
             }
             window.voteView.modelVote.set('nusers', online.length);
             window.usercount = online.length;
-            
+            this.sendInteraction('Cambio de equipo de trabajo', null);
             setTimeout(function(){
                 window.WB.updateWaiting();
                 $('.loading-container-restart').removeClass('active');
@@ -155,7 +174,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
         }, function(response) {
             $('#btn-chat-popup-help').prop('disabled', true).hide(400);
         });
-        
+        this.sendInteraction('Cambia su estado ausente', null);
     },
     //Guarda el progreso de la actividad en el servidor
     save : function(withMessage) {
@@ -179,7 +198,8 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
                         CSLP.message.success('Respuesta Guardada');
                         break;
                     case 2:
-                        CSLP.message.warning('Haz iniciado la votación');  
+                        CSLP.message.warning('Haz iniciado la votación');
+                        break;
                 }
             } 
         });
@@ -196,6 +216,7 @@ CSLP.Workboard.Models.Activity = Backbone.Model.extend({
                     self.set('lider', response.lider);
                     console.log(response.lider);
                     window.WB.renderActivityTeam();
+                    this.sendInteraction('Proceso de creación de un Líder', response.lider);
                 }    
             });
             
